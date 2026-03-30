@@ -1,0 +1,38 @@
+[
+  {
+    "title": "Glow Pulse",
+    "subtitle": "発光ロゴが静かに立ち上がる 1.2秒導入",
+    "tags": ["Minimal", "Brand Intro", "HTML", "React"],
+    "difficulty": "Beginner"
+  },
+  {
+    "title": "Moon Gate",
+    "subtitle": "和風の光粒子で始まる幻想系オープニング",
+    "tags": ["Japanese", "Portfolio", "HTML"],
+    "difficulty": "Intermediate"
+  },
+  {
+    "title": "Signal Rise",
+    "subtitle": "SF系のライン走査とロゴ定着演出",
+    "tags": ["Sci-Fi", "App Launch", "HTML", "Expo"],
+    "difficulty": "Intermediate"
+  },
+  {
+    "title": "Soft Bloom",
+    "subtitle": "やさしいボケ感で始まる可愛い系導入",
+    "tags": ["Cute", "Loading", "HTML", "Flutter"],
+    "difficulty": "Beginner"
+  },
+  {
+    "title": "Glass Entry",
+    "subtitle": "ガラスUIとライトスイープの高級感演出",
+    "tags": ["Luxury", "Landing Page", "React"],
+    "difficulty": "Advanced"
+  },
+  {
+    "title": "Start Orbit",
+    "subtitle": "ゲーム開始向けの円軌道スプライト演出",
+    "tags": ["Game", "Start", "HTML", "Android"],
+    "difficulty": "Intermediate"
+  }
+]
