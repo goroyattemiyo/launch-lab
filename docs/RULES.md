@@ -236,6 +236,7 @@ React / Flutter / Expo / Android などへの実装導線、
 - `docs/sitemap.md`
 - `docs/discord-structure.md`
 - `docs/product-plan.md`
+- `docs/content-policy.md`
 
 ### 特に `DECISIONS.md` に残すもの
 - 技術選定

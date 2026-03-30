@@ -32,6 +32,9 @@
 - PRODUCT PLAN  
   https://raw.githubusercontent.com/goroyattemiyo/launch-lab/main/docs/product-plan.md
 
+- CONTENT POLICY  
+  https://raw.githubusercontent.com/goroyattemiyo/launch-lab/main/docs/content-policy.md
+
 ## web
 - web placeholder  
   https://raw.githubusercontent.com/goroyattemiyo/launch-lab/main/web/.gitkeep

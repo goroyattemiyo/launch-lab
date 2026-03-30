@@ -26,3 +26,6 @@ React / Flutter / Expo / Android などへの実装導線、
 ## AI handoff
 別AIへ引き継ぐときは、まず `docs/AI_ENTRYPOINT.md` を読ませてください。
 Raw URL 一覧は `docs/RAW_INDEX.md` にあります。
+別AIへ引き継ぐときは、まず `docs/AI_ENTRYPOINT.md` を読ませてください。  
+Raw URL 一覧は `docs/RAW_INDEX.md` にあります。  
+コンテンツ公開・著作権・配布方針は `docs/content-policy.md` を参照してください。

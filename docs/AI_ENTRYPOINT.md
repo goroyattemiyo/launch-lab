@@ -13,8 +13,9 @@ HTMLでその場で試せる数秒オープニング演出を入口に、React /
 2. 次に `docs/DECISIONS.md` を読む
 3. 次に `docs/BACKLOG.md` を読む
 4. 次に `docs/requirements.md` を読む
-5. 必要に応じて `docs/sitemap.md` `docs/discord-structure.md` `docs/product-plan.md` を読む
-6. 読んだ前提で、勝手に大きな構成変更をせず、変更前に目的と影響範囲を整理する
+5. 次に `docs/content-policy.md` を読む
+6. 必要に応じて `docs/sitemap.md` `docs/discord-structure.md` `docs/product-plan.md` を読む
+7. 読んだ前提で、勝手に大きな構成変更をせず、変更前に目的と影響範囲を整理する
 
 ## 最重要ルール
 - いきなりコードを書かない
@@ -37,6 +38,9 @@ HTMLでその場で試せる数秒オープニング演出を入口に、React /
 
 - REQUIREMENTS  
   https://raw.githubusercontent.com/goroyattemiyo/launch-lab/main/docs/requirements.md
+
+- CONTENT POLICY  
+  https://raw.githubusercontent.com/goroyattemiyo/launch-lab/main/docs/content-policy.md
 
 - SITEMAP  
   https://raw.githubusercontent.com/goroyattemiyo/launch-lab/main/docs/sitemap.md
@@ -64,5 +68,6 @@ HTMLでその場で試せる数秒オープニング演出を入口に、React /
 2. DECISIONS
 3. BACKLOG
 4. REQUIREMENTS
+5. CONTENT POLICY
 必要なら RAW_INDEX も参照してください。
 大きな変更をする前に、目的・影響範囲・ロールバック案を先に整理してください。
