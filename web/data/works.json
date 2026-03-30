@@ -3,36 +3,70 @@
     "title": "Glow Pulse",
     "subtitle": "発光ロゴが静かに立ち上がる 1.2秒導入",
     "tags": ["Minimal", "Brand Intro", "HTML", "React"],
-    "difficulty": "Beginner"
+    "difficulty": "Beginner",
+    "preview": "pulse"
   },
   {
     "title": "Moon Gate",
     "subtitle": "和風の光粒子で始まる幻想系オープニング",
     "tags": ["Japanese", "Portfolio", "HTML"],
-    "difficulty": "Intermediate"
+    "difficulty": "Intermediate",
+    "preview": "bloom"
   },
   {
     "title": "Signal Rise",
     "subtitle": "SF系のライン走査とロゴ定着演出",
     "tags": ["Sci-Fi", "App Launch", "HTML", "Expo"],
-    "difficulty": "Intermediate"
+    "difficulty": "Intermediate",
+    "preview": "bars"
   },
   {
     "title": "Soft Bloom",
     "subtitle": "やさしいボケ感で始まる可愛い系導入",
     "tags": ["Cute", "Loading", "HTML", "Flutter"],
-    "difficulty": "Beginner"
+    "difficulty": "Beginner",
+    "preview": "bloom"
   },
   {
     "title": "Glass Entry",
     "subtitle": "ガラスUIとライトスイープの高級感演出",
     "tags": ["Luxury", "Landing Page", "React"],
-    "difficulty": "Advanced"
+    "difficulty": "Advanced",
+    "preview": "sweep"
   },
   {
     "title": "Start Orbit",
     "subtitle": "ゲーム開始向けの円軌道スプライト演出",
     "tags": ["Game", "Start", "HTML", "Android"],
-    "difficulty": "Intermediate"
+    "difficulty": "Intermediate",
+    "preview": "orbit"
+  },
+  {
+    "title": "Velvet Shine",
+    "subtitle": "金属光沢が横切る高級ブランド向け導入",
+    "tags": ["Luxury", "Brand Intro", "HTML", "React"],
+    "difficulty": "Intermediate",
+    "preview": "sweep"
+  },
+  {
+    "title": "Neon Drift",
+    "subtitle": "青紫ネオンが流れる近未来ローディング演出",
+    "tags": ["Sci-Fi", "Loading", "HTML", "Expo"],
+    "difficulty": "Intermediate",
+    "preview": "bars"
+  },
+  {
+    "title": "Paper Lantern",
+    "subtitle": "柔らかな灯りがにじむ和モダンな立ち上がり",
+    "tags": ["Japanese", "App Launch", "HTML"],
+    "difficulty": "Beginner",
+    "preview": "pulse"
+  },
+  {
+    "title": "Candy Pop",
+    "subtitle": "弾む粒子とポップな色感で始まる可愛い導入",
+    "tags": ["Pop", "Portfolio", "HTML", "Flutter"],
+    "difficulty": "Beginner",
+    "preview": "orbit"
   }
 ]

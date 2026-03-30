@@ -10,7 +10,11 @@ async function loadWorks() {
       .map(
         (work) => `
           <article class="works-card">
-            <div class="works-thumb"></div>
+            <div class="works-thumb thumb-${escapeHtml(work.preview || "pulse")}">
+              <span class="thumb-center"></span>
+              <span class="thumb-accent"></span>
+            </div>
+
             <h3>${escapeHtml(work.title)}</h3>
             <p>${escapeHtml(work.subtitle)}</p>
 
