@@ -22,3 +22,7 @@ React / Flutter / Expo / Android などへの実装導線、
 - トップページ構成
 - 作品カード仕様
 - Discord構成
+
+## AI handoff
+別AIへ引き継ぐときは、まず `docs/AI_ENTRYPOINT.md` を読ませてください。
+Raw URL 一覧は `docs/RAW_INDEX.md` にあります。

@@ -287,3 +287,7 @@ React / Flutter / Expo / Android などへの実装導線、
 - Launch Lab の価値である
   **「見て楽しい、使えてうれしい、参加したくなる」**
   を壊さないこと
+
+  ## Raw URL 管理ルール
+- 新規の重要 md ファイルを追加・改名・移動した場合は `docs/RAW_INDEX.md` を更新する
+- 別AIへ作業を引き継ぐときは、最初に `docs/AI_ENTRYPOINT.md` を渡す
