@@ -1,1 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Signal Rise</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #09090b;
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    font-family: "Segoe UI", sans-serif;
+  }
+  .stage {
+    position: relative;
+    width: 100%;
+    min-width: 320px;
+    min-height: 480px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background: #09090b;
+  }
 
+  /* スキャンライン背景 */
+  .scanlines {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0,255,180,0.015) 3px,
+      rgba(0,255,180,0.015) 4px
+    );
+    pointer-events: none;
+  }
+
+  /* バーコンテナ */
+  .bars {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    padding: 0 10%;
+    gap: 3px;
+  }
+  .bar {
+    flex: 1;
+    background: linear-gradient(to top, rgba(0,255,180,0.7), rgba(0,255,180,0.1));
+    transform-origin: bottom;
+    transform: scaleY(0);
+    animation: bar-rise 2.5s ease-in-out infinite;
+  }
+
+  /* 各バーの高さとdelayをランダム風に */
+  .bar:nth-child(1)  { animation-delay: 0.00s; --h: 0.15; }
+  .bar:nth-child(2)  { animation-delay: 0.05s; --h: 0.35; }
+  .bar:nth-child(3)  { animation-delay: 0.10s; --h: 0.55; }
+  .bar:nth-child(4)  { animation-delay: 0.15s; --h: 0.72; }
+  .bar:nth-child(5)  { animation-delay: 0.20s; --h: 0.85; }
+  .bar:nth-child(6)  { animation-delay: 0.25s; --h: 0.95; }
+  .bar:nth-child(7)  { animation-delay: 0.30s; --h: 1.00; }
+  .bar:nth-child(8)  { animation-delay: 0.35s; --h: 0.98; }
+  .bar:nth-child(9)  { animation-delay: 0.40s; --h: 0.88; }
+  .bar:nth-child(10) { animation-delay: 0.45s; --h: 0.75; }
+  .bar:nth-child(11) { animation-delay: 0.50s; --h: 0.60; }
+  .bar:nth-child(12) { animation-delay: 0.55s; --h: 0.42; }
+  .bar:nth-child(13) { animation-delay: 0.60s; --h: 0.28; }
+  .bar:nth-child(14) { animation-delay: 0.65s; --h: 0.18; }
+  .bar:nth-child(15) { animation-delay: 0.70s; --h: 0.10; }
+
+  @keyframes bar-rise {
+    0%   { transform: scaleY(0); opacity: 0; }
+    20%  { transform: scaleY(var(--h, 0.5)); opacity: 1; }
+    60%  { transform: scaleY(var(--h, 0.5)); opacity: 0.8; }
+    85%  { transform: scaleY(0.02); opacity: 0.3; }
+    100% { transform: scaleY(0); opacity: 0; }
+  }
+
+  /* 横スキャン光 */
+  .scan-h {
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,255,180,0.6), transparent);
+    animation: scan-sweep 2.5s ease-in-out infinite;
+  }
+  @keyframes scan-sweep {
+    0%   { top: 100%; opacity: 0; }
+    10%  { opacity: 1; }
+    70%  { top: 0%; opacity: 0.8; }
+    90%  { opacity: 0; }
+    100% { top: 0%; opacity: 0; }
+  }
+
+  .content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    animation: flicker-in 0.4s steps(3) 0.8s forwards;
+    opacity: 0;
+  }
+  @keyframes flicker-in {
+    0%   { opacity: 0; }
+    33%  { opacity: 1; }
+    66%  { opacity: 0.3; }
+    100% { opacity: 1; }
+  }
+  .label {
+    font-size: 9px;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    color: rgba(0,255,180,0.5);
+    margin-bottom: 10px;
+  }
+  .title {
+    font-size: 40px;
+    font-weight: 300;
+    letter-spacing: 0.25em;
+    color: rgba(0,255,180,0.9);
+    text-shadow: 0 0 20px rgba(0,255,180,0.4);
+  }
+  .sub {
+    margin-top: 10px;
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    color: rgba(0,255,180,0.3);
+    text-transform: uppercase;
+  }
+  .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: rgba(0,255,180,0.8);
+    vertical-align: middle;
+    margin-left: 4px;
+    animation: blink 0.8s step-end infinite;
+  }
+  @keyframes blink {
+    0%,100% { opacity: 1; }
+    50%     { opacity: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="scanlines"></div>
+  <div class="scan-h"></div>
+  <div class="bars">
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+  </div>
+  <div class="content">
+    <p class="label">Sci-Fi</p>
+    <h1 class="title">SIGNAL<span class="cursor"></span></h1>
+    <p class="sub">Rise / App Launch</p>
+  </div>
+</div>
+</body>
+</html>
