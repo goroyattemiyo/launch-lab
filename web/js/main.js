@@ -28,7 +28,7 @@ async function loadWorks() {
       .map((work) => {
         const key = titleToKey(work.title);
         const previewFile = PREVIEW_MAP[key] || null;
-        const previewSrc = previewFile ? `../previews/${previewFile}` : null;
+        const previewSrc = previewFile ? `./previews/${previewFile}` : null;
 
         return `
           <article class="works-card" data-key="${escapeHtml(key)}" data-title="${escapeHtml(work.title)}">
