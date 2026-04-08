@@ -1,1 +1,217 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Velvet Shine</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #09090b;
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    font-family: "Segoe UI", sans-serif;
+  }
+  .stage {
+    position: relative;
+    width: 100%;
+    min-width: 320px;
+    min-height: 480px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background: linear-gradient(160deg, #0e0b08 0%, #120d07 50%, #0e0b08 100%);
+  }
 
+  /* ベルベット質感の背景 */
+  .velvet-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 30% 50%, rgba(180,130,40,0.06), transparent),
+      radial-gradient(ellipse 50% 60% at 70% 50%, rgba(200,160,60,0.04), transparent);
+  }
+
+  /* sweep帯1: メイン（ゆっくり） */
+  .sweep-a {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 0%, transparent 25%,
+      rgba(220,170,60,0.0) 32%,
+      rgba(220,170,60,0.12) 38%,
+      rgba(240,200,100,0.28) 42%,
+      rgba(255,220,120,0.38) 46%,
+      rgba(240,200,100,0.28) 50%,
+      rgba(220,170,60,0.12) 54%,
+      rgba(220,170,60,0.0) 60%,
+      transparent 67%, transparent 100%
+    );
+    transform: translateX(-130%);
+    animation: sweep-slow 5s cubic-bezier(0.4,0,0.2,1) infinite;
+  }
+
+  /* sweep帯2: 細い（少し遅れて） */
+  .sweep-b {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 0%, transparent 35%,
+      rgba(255,230,140,0.0) 41%,
+      rgba(255,230,140,0.14) 44%,
+      rgba(255,240,160,0.22) 47%,
+      rgba(255,230,140,0.14) 50%,
+      rgba(255,230,140,0.0) 53%,
+      transparent 59%, transparent 100%
+    );
+    transform: translateX(-130%);
+    animation: sweep-slow 5s cubic-bezier(0.4,0,0.2,1) infinite;
+    animation-delay: 0.3s;
+  }
+
+  /* sweep帯3: さらに細い（余韻） */
+  .sweep-c {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 0%, transparent 42%,
+      rgba(200,160,60,0.0) 47%,
+      rgba(200,160,60,0.08) 50%,
+      rgba(200,160,60,0.0) 53%,
+      transparent 58%, transparent 100%
+    );
+    transform: translateX(-130%);
+    animation: sweep-slow 5s cubic-bezier(0.4,0,0.2,1) infinite;
+    animation-delay: 0.6s;
+  }
+
+  @keyframes sweep-slow {
+    0%   { transform: translateX(-130%); }
+    65%  { transform: translateX(130%); }
+    100% { transform: translateX(130%); }
+  }
+
+  /* 上下エッジのゴールドライン */
+  .gold-edge {
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    animation: gold-shimmer 5s ease-in-out infinite;
+  }
+  .gold-top {
+    top: 0;
+    background: linear-gradient(90deg, transparent 5%, rgba(220,170,60,0.3) 30%, rgba(255,220,100,0.5) 50%, rgba(220,170,60,0.3) 70%, transparent 95%);
+  }
+  .gold-bottom {
+    bottom: 0;
+    background: linear-gradient(90deg, transparent 5%, rgba(220,170,60,0.15) 30%, rgba(255,220,100,0.25) 50%, rgba(220,170,60,0.15) 70%, transparent 95%);
+  }
+  @keyframes gold-shimmer {
+    0%,20% { opacity: 0; }
+    45%    { opacity: 1; }
+    75%,100%{ opacity: 0; }
+  }
+
+  /* コーナーダイヤ */
+  .diamond {
+    position: absolute;
+    width: 6px; height: 6px;
+    border: 1px solid rgba(220,170,60,0.5);
+    transform: rotate(45deg);
+    opacity: 0;
+    animation: diamond-appear 5s ease-in-out infinite;
+  }
+  .d-tl { top: 28px; left: 28px; }
+  .d-tr { top: 28px; right: 28px; animation-delay: 0.1s; }
+  .d-bl { bottom: 28px; left: 28px; animation-delay: 0.2s; }
+  .d-br { bottom: 28px; right: 28px; animation-delay: 0.3s; }
+  @keyframes diamond-appear {
+    0%,28% { opacity: 0; }
+    50%    { opacity: 1; }
+    75%,100%{ opacity: 0; }
+  }
+
+  .content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    opacity: 0;
+    animation: content-gold 5s ease-in-out infinite;
+  }
+  @keyframes content-gold {
+    0%,20%  { opacity: 0; transform: translateY(10px); }
+    45%     { opacity: 1; transform: translateY(0); }
+    78%,100%{ opacity: 0; transform: translateY(-4px); }
+  }
+  .label {
+    font-size: 9px;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    color: rgba(220,170,60,0.55);
+    margin-bottom: 14px;
+  }
+  .title {
+    font-size: 40px;
+    font-weight: 200;
+    letter-spacing: 0.25em;
+    color: rgba(255,230,150,0.92);
+    text-shadow: 0 0 30px rgba(220,170,60,0.35);
+  }
+  .ornament {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 14px 0;
+  }
+  .ornament-line {
+    flex: 1;
+    max-width: 40px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(220,170,60,0.4));
+  }
+  .ornament-line:last-child {
+    background: linear-gradient(90deg, rgba(220,170,60,0.4), transparent);
+  }
+  .ornament-dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: rgba(220,170,60,0.6);
+  }
+  .sub {
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    color: rgba(220,170,60,0.28);
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="velvet-bg"></div>
+  <div class="sweep-a"></div>
+  <div class="sweep-b"></div>
+  <div class="sweep-c"></div>
+  <div class="gold-edge gold-top"></div>
+  <div class="gold-edge gold-bottom"></div>
+  <div class="diamond d-tl"></div>
+  <div class="diamond d-tr"></div>
+  <div class="diamond d-bl"></div>
+  <div class="diamond d-br"></div>
+  <div class="content">
+    <p class="label">Luxury Brand</p>
+    <h1 class="title">VELVET</h1>
+    <div class="ornament">
+      <div class="ornament-line"></div>
+      <div class="ornament-dot"></div>
+      <div class="ornament-line"></div>
+    </div>
+    <p class="sub">Shine</p>
+  </div>
+</div>
+</body>
+</html>
