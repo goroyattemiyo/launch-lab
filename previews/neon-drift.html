@@ -1,1 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Neon Drift</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #09090b;
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    font-family: "Segoe UI", sans-serif;
+  }
+  .stage {
+    position: relative;
+    width: 100%;
+    min-width: 320px;
+    min-height: 480px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background: #06060f;
+  }
 
+  /* 流れる横バー群 */
+  .bar {
+    position: absolute;
+    left: -100%;
+    height: 1px;
+    animation: drift linear infinite;
+  }
+  .bar-1  { top: 15%; width: 60%; background: linear-gradient(90deg, transparent, rgba(100,80,255,0.8), transparent); animation-duration: 3.0s; animation-delay: 0.0s; }
+  .bar-2  { top: 28%; width: 80%; background: linear-gradient(90deg, transparent, rgba(80,160,255,0.6), transparent); animation-duration: 3.8s; animation-delay: 0.4s; }
+  .bar-3  { top: 38%; width: 50%; background: linear-gradient(90deg, transparent, rgba(160,80,255,0.9), transparent); animation-duration: 2.6s; animation-delay: 0.8s; height: 2px; }
+  .bar-4  { top: 50%; width: 70%; background: linear-gradient(90deg, transparent, rgba(80,200,255,0.5), transparent); animation-duration: 4.2s; animation-delay: 0.2s; }
+  .bar-5  { top: 62%; width: 55%; background: linear-gradient(90deg, transparent, rgba(120,60,255,0.7), transparent); animation-duration: 3.3s; animation-delay: 1.0s; }
+  .bar-6  { top: 73%; width: 75%; background: linear-gradient(90deg, transparent, rgba(60,140,255,0.5), transparent); animation-duration: 4.5s; animation-delay: 0.6s; }
+  .bar-7  { top: 85%; width: 45%; background: linear-gradient(90deg, transparent, rgba(180,80,255,0.6), transparent); animation-duration: 2.8s; animation-delay: 1.4s; }
+
+  @keyframes drift {
+    0%   { left: -100%; opacity: 0; }
+    10%  { opacity: 1; }
+    85%  { opacity: 1; }
+    100% { left: 110%; opacity: 0; }
+  }
+
+  /* 縦のグリッドライン */
+  .vline {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, rgba(100,80,255,0.15), transparent);
+  }
+  .vline:nth-child(1) { left: 20%; }
+  .vline:nth-child(2) { left: 40%; }
+  .vline:nth-child(3) { left: 60%; }
+  .vline:nth-child(4) { left: 80%; }
+
+  /* 背景グロー */
+  .bg-glow {
+    position: absolute;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(80,60,200,0.12), transparent 70%);
+    animation: glow-drift 3.5s ease-in-out infinite;
+  }
+  @keyframes glow-drift {
+    0%,100% { transform: translateX(-30px); opacity: 0.6; }
+    50%     { transform: translateX(30px); opacity: 1; }
+  }
+
+  .content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+  }
+  .label {
+    font-size: 9px;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    color: rgba(120,100,255,0.6);
+    margin-bottom: 12px;
+    animation: flicker 3.5s ease-in-out infinite;
+  }
+  @keyframes flicker {
+    0%,100% { opacity: 0.6; }
+    48%     { opacity: 0.6; }
+    50%     { opacity: 0.2; }
+    52%     { opacity: 0.6; }
+    80%     { opacity: 0.4; }
+    82%     { opacity: 0.6; }
+  }
+  .title {
+    font-size: 42px;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    color: rgba(140,120,255,0.92);
+    text-shadow: 0 0 30px rgba(100,80,255,0.6), 0 0 60px rgba(80,60,200,0.3);
+    animation: neon-pulse 3.5s ease-in-out infinite;
+  }
+  @keyframes neon-pulse {
+    0%,100% { text-shadow: 0 0 20px rgba(100,80,255,0.5), 0 0 40px rgba(80,60,200,0.2); }
+    50%     { text-shadow: 0 0 40px rgba(120,100,255,0.9), 0 0 80px rgba(100,80,255,0.4); }
+  }
+  .sub {
+    margin-top: 12px;
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    color: rgba(100,80,255,0.3);
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="vline"></div>
+  <div class="vline"></div>
+  <div class="vline"></div>
+  <div class="vline"></div>
+  <div class="bg-glow"></div>
+  <div class="bar bar-1"></div>
+  <div class="bar bar-2"></div>
+  <div class="bar bar-3"></div>
+  <div class="bar bar-4"></div>
+  <div class="bar bar-5"></div>
+  <div class="bar bar-6"></div>
+  <div class="bar bar-7"></div>
+  <div class="content">
+    <p class="label">Sci-Fi / Loading</p>
+    <h1 class="title">NEON</h1>
+    <p class="sub">Drift</p>
+  </div>
+</div>
+</body>
+</html>
