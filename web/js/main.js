@@ -1,17 +1,4 @@
-const PREVIEW_MAP = {
-  "glass-entry":   "glass-entry.html",
-  "start-orbit":   "start-orbit.html",
-  "candy-pop":     "candy-pop.html",
-  "moon-gate":     "moon-gate.html",
-  "signal-rise":   "signal-rise.html",
-  "glow-pulse":    "glow-pulse.html",
-  "neon-drift":    "neon-drift.html",
-  "paper-lantern": "paper-lantern.html",
-  "velvet-shine":  "velvet-shine.html",
-  "soft-bloom":    "soft-bloom.html",
-};
-
-// works.jsonのtitleからファイル名に変換
+// titleからファイル名に変換（PREVIEW_MAPは不要、動的解決）
 function titleToKey(title) {
   return title.toLowerCase().replace(/\s+/g, "-");
 }
@@ -27,23 +14,19 @@ async function loadWorks() {
     grid.innerHTML = works
       .map((work) => {
         const key = titleToKey(work.title);
-        const previewFile = PREVIEW_MAP[key] || null;
-        const previewSrc = previewFile ? `./previews/${previewFile}` : null;
+        const previewSrc = `./previews/${key}.html`;
 
         return `
           <article class="works-card" data-key="${escapeHtml(key)}" data-title="${escapeHtml(work.title)}">
             <div class="works-thumb">
-              ${previewSrc
-                ? `<iframe
-                    class="thumb-iframe"
-                    src="${escapeHtml(previewSrc)}"
-                    scrolling="no"
-                    tabindex="-1"
-                    aria-hidden="true"
-                    loading="lazy"
-                  ></iframe>`
-                : `<span class="thumb-fallback">${escapeHtml(work.preview || "●")}</span>`
-              }
+              <iframe
+                class="thumb-iframe"
+                src="${escapeHtml(previewSrc)}"
+                scrolling="no"
+                tabindex="-1"
+                aria-hidden="true"
+                loading="lazy"
+              ></iframe>
               <div class="thumb-overlay"></div>
             </div>
 
@@ -59,7 +42,7 @@ async function loadWorks() {
               <strong>${escapeHtml(work.difficulty)}</strong>
             </div>
 
-            <button class="btn btn-primary open-modal-btn" data-src="${escapeHtml(previewSrc || "")}">
+            <button class="btn btn-primary open-modal-btn" data-src="${escapeHtml(previewSrc)}">
               プレビューを見る
             </button>
           </article>
@@ -124,7 +107,6 @@ function closeModal() {
   if (!modal) return;
   modal.classList.remove("is-open");
   document.body.style.overflow = "";
-  // iframeをリセット（アニメを止める）
   setTimeout(() => {
     const iframe = document.getElementById("modal-iframe");
     if (iframe) iframe.src = "";
