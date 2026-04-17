@@ -10,6 +10,33 @@
   />
   <link rel="stylesheet" href="./css/style.css" />
   <link rel="stylesheet" href="./css/modal.css" />
+  <style>
+    /* Coming Soon tooltip */
+    .has-coming-soon {
+      position: relative;
+    }
+    .has-coming-soon::after {
+      content: "Coming Soon";
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255 255 255 / 0.08);
+      color: rgba(255 255 255 / 0.5);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      padding: 3px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      border: 1px solid rgba(255 255 255 / 0.12);
+    }
+    .has-coming-soon:hover::after {
+      opacity: 1;
+    }
+  </style>
 </head>
 <body>
   <div class="bg-orb orb-1"></div>
@@ -31,7 +58,7 @@
         <a href="#developers">開発者向け</a>
         <a href="#community">コミュニティ</a>
         <a href="#request">相談</a>
-        </nav>
+      </nav>
 
       <div class="header-actions">
         <a href="#community" class="btn btn-ghost">Discord</a>
@@ -61,17 +88,17 @@
             <a href="#works" class="btn btn-primary">作品を見る</a>
             <a href="#community" class="btn btn-ghost">Discordに参加</a>
             <a href="#developers" class="btn btn-ghost btn-subtle">開発者向け入口</a>
-            </div>
+          </div>
 
-            <p class="community-note">
+          <p class="community-note">
             毎週のお題、作品投稿、初心者質問もここから。
-            </p>
+          </p>
 
           <div class="hero-stats">
             <div class="stat-card">
-                <p class="stat-label">公開プレビュー</p>
-                <p class="stat-value">50+</p>
-                </div>
+              <p class="stat-label">公開プレビュー</p>
+              <p class="stat-value">50+</p>
+            </div>
 
             <div class="stat-card">
               <p class="stat-label">対応導線</p>
@@ -126,44 +153,44 @@
           <div class="browse-row">
             <p class="browse-title">雰囲気で探す</p>
             <div class="pill-list">
-              <button class="pill">Cute</button>
-              <button class="pill">Luxury</button>
-              <button class="pill">Sci-Fi</button>
-              <button class="pill">Japanese</button>
-              <button class="pill">Minimal</button>
-              <button class="pill">Pop</button>
+              <button class="pill" data-works-category="minimal">Cute</button>
+              <button class="pill" data-works-category="minimal">Luxury</button>
+              <button class="pill" data-works-category="game">Sci-Fi</button>
+              <button class="pill" data-works-category="japanese">Japanese</button>
+              <button class="pill" data-works-category="minimal">Minimal</button>
+              <button class="pill" data-works-category="minimal">Pop</button>
             </div>
           </div>
 
           <div class="browse-row">
             <p class="browse-title">用途で探す</p>
             <div class="pill-list">
-              <button class="pill">App Launch</button>
-              <button class="pill">Loading</button>
-              <button class="pill">Portfolio</button>
-              <button class="pill">Game Start</button>
-              <button class="pill">Brand Intro</button>
+              <button class="pill" data-works-category="all">App Launch</button>
+              <button class="pill" data-works-category="all">Loading</button>
+              <button class="pill" data-works-category="all">Portfolio</button>
+              <button class="pill" data-works-category="all">Game Start</button>
+              <button class="pill" data-works-category="all">Brand Intro</button>
             </div>
           </div>
 
           <div class="browse-row">
             <p class="browse-title">技術で探す</p>
             <div class="pill-list">
-              <button class="pill">HTML</button>
-              <button class="pill">React</button>
-              <button class="pill">Flutter</button>
-              <button class="pill">Expo</button>
-              <button class="pill">Android</button>
+              <button class="pill" data-works-category="all">HTML</button>
+              <button class="pill" data-works-category="all">React</button>
+              <button class="pill" data-works-category="all">Flutter</button>
+              <button class="pill" data-works-category="all">Expo</button>
+              <button class="pill" data-works-category="all">Android</button>
             </div>
           </div>
 
           <div class="browse-row">
             <p class="browse-title">秒数で探す</p>
             <div class="pill-list">
-              <button class="pill">0.5s</button>
-              <button class="pill">1s</button>
-              <button class="pill">2s</button>
-              <button class="pill">3s</button>
+              <button class="pill" data-works-category="all">0.5s</button>
+              <button class="pill" data-works-category="all">1s</button>
+              <button class="pill" data-works-category="all">2s</button>
+              <button class="pill" data-works-category="all">3s</button>
             </div>
           </div>
         </div>
@@ -179,15 +206,17 @@
             <p>技術説明より先に「これ、使いたい」と思えることを優先する。</p>
           </div>
 
-          <a href="#" class="btn btn-ghost">すべての作品を見る</a>
+          <!-- P0-2: # → #works に修正済み -->
+          <a href="#works" class="btn btn-ghost">すべての作品を見る</a>
         </div>
 
+        <!-- P1-4: タブ並び → すべて・きれいめ・和風・ゲームSF・奇抜系 -->
         <div class="works-tabs" id="works-tabs">
           <button class="works-tab is-active" data-category="all">すべて</button>
           <button class="works-tab" data-category="minimal">きれいめ</button>
-          <button class="works-tab" data-category="wild">奇抜系</button>
-          <button class="works-tab" data-category="game">ゲーム・SF</button>
           <button class="works-tab" data-category="japanese">和風</button>
+          <button class="works-tab" data-category="game">ゲーム・SF</button>
+          <button class="works-tab" data-category="wild">奇抜系</button>
         </div>
         <div id="works-grid" class="works-grid"></div>
       </div>
@@ -208,19 +237,20 @@
           <article class="info-card">
             <h3>React</h3>
             <p>コンポーネント化しやすい導入演出を一覧で確認。</p>
-            <a href="#" class="text-link">この入口を見る</a>
+            <!-- P1-5: Coming Soon tooltip -->
+            <a href="#" class="text-link has-coming-soon">この入口を見る</a>
           </article>
 
           <article class="info-card">
             <h3>Flutter / Expo</h3>
             <p>モバイル向け移植の入口をまとめて確認。</p>
-            <a href="#" class="text-link">この入口を見る</a>
+            <a href="#" class="text-link has-coming-soon">この入口を見る</a>
           </article>
 
           <article class="info-card">
             <h3>Android</h3>
             <p>Splash / Launch への落とし込みメモと相談導線。</p>
-            <a href="#" class="text-link">この入口を見る</a>
+            <a href="#" class="text-link has-coming-soon">この入口を見る</a>
           </article>
         </div>
       </div>
@@ -292,8 +322,9 @@
             </div>
 
             <div class="cta-actions">
-              <a href="#" class="btn btn-primary">相談する</a>
-              <a href="#" class="btn btn-ghost">商品を見る</a>
+              <!-- P1-5: Coming Soon tooltip -->
+              <a href="#" class="btn btn-primary has-coming-soon">相談する</a>
+              <a href="#" class="btn btn-ghost has-coming-soon">商品を見る</a>
             </div>
           </div>
         </div>
@@ -304,4 +335,3 @@
   <script src="./js/main.js"></script>
 </body>
 </html>
-

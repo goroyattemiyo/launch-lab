@@ -48,6 +48,7 @@ async function loadWorks() {
 
     initTabs();
     initHoverLoad();
+    initBrowsePills(); // ← Browseピル連動
 
     grid.addEventListener("click", (e) => {
       const btn = e.target.closest(".open-modal-btn");
@@ -105,6 +106,32 @@ function filterByCategory(key) {
       const iframe = card.querySelector(".thumb-iframe");
       if (iframe) iframe.src = "";
     }
+  });
+}
+
+// ---- Browseピル → worksタブ連動 ----
+// ピルクリック → 対応カテゴリのタブをアクティブにして #works へスクロール
+function initBrowsePills() {
+  document.querySelectorAll(".pill[data-works-category]").forEach((pill) => {
+    pill.addEventListener("click", () => {
+      const category = pill.dataset.worksCategory;
+
+      // 対応するタブを探してクリック相当の処理を実行
+      const tabs = document.querySelectorAll(".works-tab");
+      tabs.forEach((t) => t.classList.remove("is-active"));
+
+      const targetTab = [...tabs].find((t) => t.dataset.category === category);
+      if (targetTab) {
+        targetTab.classList.add("is-active");
+      }
+      filterByCategory(category);
+
+      // #works セクションへスクロール
+      const worksSection = document.getElementById("works");
+      if (worksSection) {
+        worksSection.scrollIntoView({ behavior: "smooth" });
+      }
+    });
   });
 }
 
