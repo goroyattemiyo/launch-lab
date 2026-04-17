@@ -25,6 +25,7 @@ async function loadWorks() {
                 scrolling="no"
                 tabindex="-1"
                 aria-hidden="true"
+                style="pointer-events:none;"
               ></iframe>
               <div class="thumb-overlay"></div>
             </div>
@@ -46,7 +47,6 @@ async function loadWorks() {
       .join("");
 
     initTabs();
-    initLazyLoad();
     initHoverLoad();
 
     grid.addEventListener("click", (e) => {
@@ -67,47 +67,18 @@ async function loadWorks() {
   }
 }
 
-// ---- IntersectionObserver：画面内に入ったら読み込み、出たら解放 ----
-function initLazyLoad() {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      const card = entry.target;
-      const iframe = card.querySelector(".thumb-iframe");
-      if (!iframe) return;
-
-      if (entry.isIntersecting) {
-        if (!iframe.src || iframe.src === window.location.href) {
-          iframe.src = card.dataset.src;
-        }
-      } else {
-        iframe.src = "";
-      }
-    });
-  }, {
-    rootMargin: "100px 0px",
-    threshold: 0.1
-  });
-
-  document.querySelectorAll(".works-card").forEach((card) => {
-    observer.observe(card);
-  });
-}
-
-// ---- ホバー時だけアニメ再生（pointer-events制御） ----
+// ---- ホバーで再生、離したら停止 ----
 function initHoverLoad() {
   document.querySelectorAll(".works-card").forEach((card) => {
     const iframe = card.querySelector(".thumb-iframe");
     if (!iframe) return;
 
     card.addEventListener("mouseenter", () => {
-      iframe.style.pointerEvents = "none";
-      if (!iframe.src || iframe.src === window.location.href) {
-        iframe.src = card.dataset.src;
-      }
+      iframe.src = card.dataset.src;
     });
 
     card.addEventListener("mouseleave", () => {
-      iframe.style.pointerEvents = "none";
+      iframe.src = "";
     });
   });
 }
