@@ -710,3 +710,34 @@ button {
     transition: none !important;
   }
 }
+
+/* ---- works tabs ---- */
+.works-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+.works-tab {
+  padding: 8px 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: rgba(255,255,255,0.45);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.works-tab:hover {
+  border-color: rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.8);
+}
+.works-tab.is-active {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.35);
+  color: rgba(255,255,255,0.95);
+}
+.works-card.is-hidden {
+  display: none;
+}

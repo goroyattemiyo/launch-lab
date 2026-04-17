@@ -1,4 +1,3 @@
-// titleからファイル名に変換（PREVIEW_MAPは不要、動的解決）
 function titleToKey(title) {
   return title.toLowerCase().replace(/\s+/g, "-");
 }
@@ -15,9 +14,10 @@ async function loadWorks() {
       .map((work) => {
         const key = titleToKey(work.title);
         const previewSrc = `./previews/${key}.html`;
+        const category = work.category || "minimal";
 
         return `
-          <article class="works-card" data-key="${escapeHtml(key)}" data-title="${escapeHtml(work.title)}">
+          <article class="works-card" data-key="${escapeHtml(key)}" data-category="${escapeHtml(category)}">
             <div class="works-thumb">
               <iframe
                 class="thumb-iframe"
@@ -29,19 +29,15 @@ async function loadWorks() {
               ></iframe>
               <div class="thumb-overlay"></div>
             </div>
-
             <h3>${escapeHtml(work.title)}</h3>
             <p>${escapeHtml(work.subtitle)}</p>
-
             <div class="badge-list">
               ${work.tags.map((tag) => `<span class="badge">${escapeHtml(tag)}</span>`).join("")}
             </div>
-
             <div class="works-meta">
               <span>難易度</span>
               <strong>${escapeHtml(work.difficulty)}</strong>
             </div>
-
             <button class="btn btn-primary open-modal-btn" data-src="${escapeHtml(previewSrc)}">
               プレビューを見る
             </button>
@@ -50,7 +46,8 @@ async function loadWorks() {
       })
       .join("");
 
-    // モーダルを開くイベント
+    initTabs();
+
     grid.addEventListener("click", (e) => {
       const btn = e.target.closest(".open-modal-btn");
       if (!btn) return;
@@ -69,11 +66,28 @@ async function loadWorks() {
   }
 }
 
-// ---- モーダル ----
+function initTabs() {
+  const tabs = document.querySelectorAll(".works-tab");
+  if (!tabs.length) return;
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      tabs.forEach((t) => t.classList.remove("is-active"));
+      tab.classList.add("is-active");
+      filterByCategory(tab.dataset.category);
+    });
+  });
+}
+
+function filterByCategory(key) {
+  document.querySelectorAll(".works-card").forEach((card) => {
+    const match = key === "all" || card.dataset.category === key;
+    card.classList.toggle("is-hidden", !match);
+  });
+}
 
 function buildModal() {
   if (document.getElementById("preview-modal")) return;
-
   const modal = document.createElement("div");
   modal.id = "preview-modal";
   modal.innerHTML = `
@@ -84,10 +98,8 @@ function buildModal() {
     </div>
   `;
   document.body.appendChild(modal);
-
   modal.querySelector(".modal-backdrop").addEventListener("click", closeModal);
   modal.querySelector(".modal-close").addEventListener("click", closeModal);
-
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeModal();
   });
@@ -112,8 +124,6 @@ function closeModal() {
     if (iframe) iframe.src = "";
   }, 300);
 }
-
-// ---- ユーティリティ ----
 
 function escapeHtml(value) {
   return String(value)
