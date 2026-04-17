@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Signal Lost</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #030303; display: grid; place-items: center; min-height: 480px; overflow: hidden; font-family: "Courier New", monospace; }
+  canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+  .content { position: relative; z-index: 2; text-align: center; }
+  .label { font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase; color: rgba(255,255,255,0.25); margin-bottom: 12px; }
+  .title { font-size: 44px; font-weight: 700; letter-spacing: 0.15em; color: rgba(255,255,255,0.85); animation: signal-static 4s steps(1) infinite; }
+  @keyframes signal-static { 0%,85%,100%{opacity:0.85;transform:translate(0);} 86%{opacity:0.3;transform:translate(4px,0);} 87%{opacity:0.9;transform:translate(-2px,0);} 88%{opacity:0;} 89%{opacity:0.7;transform:translate(0);} 90%{opacity:0.1;transform:translate(3px,-2px);} 91%{opacity:0.85;transform:translate(0);} }
+  .sub { font-size: 10px; letter-spacing: 0.4em; color: rgba(255,255,255,0.2); text-transform: uppercase; margin-top: 12px; animation: sub-drop 4s steps(1) infinite; }
+  @keyframes sub-drop { 0%,85%,100%{opacity:0.2;} 88%{opacity:0;} 89%{opacity:0.5;} }
+  .bars { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 3px; z-index: 3; }
+  .bar-s { width: 4px; border-radius: 2px; background: rgba(255,255,255,0.4); animation: signal-bar 1s ease-in-out infinite; }
+  .bar-s:nth-child(1){height:8px;animation-delay:0s;}
+  .bar-s:nth-child(2){height:14px;animation-delay:0.15s;}
+  .bar-s:nth-child(3){height:20px;animation-delay:0.3s;}
+  .bar-s:nth-child(4){height:14px;animation-delay:0.15s;}
+  .bar-s:nth-child(5){height:8px;animation-delay:0s;}
+  @keyframes signal-bar { 0%,100%{opacity:0.2;} 50%{opacity:0.8;} }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="content">
+  <p class="label">Glitch</p>
+  <h1 class="title">SIGNAL</h1>
+  <p class="sub">Lost</p>
+</div>
+<div class="bars">
+  <div class="bar-s"></div><div class="bar-s"></div><div class="bar-s"></div><div class="bar-s"></div><div class="bar-s"></div>
+</div>
+<script>
+const c=document.getElementById('c');
+const ctx=c.getContext('2d');
+c.width=800;c.height=480;
+const W=c.width,H=c.height;
+let t=0;
+function draw(){
+  t++;
+  const img=ctx.createImageData(W,H);
+  const intensity=t%240>200?0.8:0.03;
+  for(let i=0;i<img.data.length;i+=4){
+    const v=Math.random()*255*intensity;
+    img.data[i]=img.data[i+1]=img.data[i+2]=v;
+    img.data[i+3]=Math.random()*60*intensity+10;
+  }
+  ctx.putImageData(img,0,0);
+  if(t%240<=200){
+    ctx.fillStyle='rgba(3,3,3,0.85)';
+    ctx.fillRect(0,0,W,H);
+    for(let i=0;i<3;i++){
+      const y=Math.random()*H;
+      ctx.fillStyle=`rgba(255,255,255,${0.02+Math.random()*0.03})`;
+      ctx.fillRect(0,y,W,1+Math.random()*2);
+    }
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

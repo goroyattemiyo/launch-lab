@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Matrix Rain</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; display: grid; place-items: center; min-height: 480px; overflow: hidden; font-family: "Courier New", monospace; }
+  canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+  .content { position: relative; z-index: 2; text-align: center; animation: matrix-in 1.5s ease-out forwards; opacity: 0; }
+  @keyframes matrix-in { 0%{opacity:0;} 50%{opacity:0;} 100%{opacity:1;} }
+  .label { font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase; color: rgba(0,255,70,0.4); margin-bottom: 12px; }
+  .title { font-size: 44px; font-weight: 700; letter-spacing: 0.15em; color: #00ff46; text-shadow: 0 0 20px rgba(0,255,70,0.5), 0 0 40px rgba(0,255,70,0.2); }
+  .sub { font-size: 10px; letter-spacing: 0.4em; color: rgba(0,200,50,0.35); text-transform: uppercase; margin-top: 12px; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="content">
+  <p class="label">Pixel</p>
+  <h1 class="title">MATRIX</h1>
+  <p class="sub">Rain</p>
+</div>
+<script>
+const c=document.getElementById('c');
+const ctx=c.getContext('2d');
+c.width=800;c.height=480;
+const W=c.width,H=c.height;
+const FS=12,COLS=Math.floor(W/FS);
+const drops=Array.from({length:COLS},()=>Math.random()*-50);
+const chars='ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789';
+function draw(){
+  ctx.fillStyle='rgba(0,0,0,0.05)';
+  ctx.fillRect(0,0,W,H);
+  ctx.font=FS+'px Courier New';
+  drops.forEach((y,i)=>{
+    const ch=chars[Math.floor(Math.random()*chars.length)];
+    const bright=Math.random()>0.95;
+    ctx.fillStyle=bright?'rgba(180,255,180,0.9)':`rgba(0,${150+Math.floor(Math.random()*105)},50,0.8)`;
+    ctx.fillText(ch,i*FS,y*FS);
+    if(y*FS>H&&Math.random()>0.975) drops[i]=0;
+    else drops[i]+=0.5;
+  });
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

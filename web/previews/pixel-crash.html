@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pixel Crash</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; display: grid; place-items: center; min-height: 480px; overflow: hidden; font-family: "Courier New", monospace; image-rendering: pixelated; }
+  canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+  .content { position: relative; z-index: 2; text-align: center; }
+  .label { font-size: 9px; letter-spacing: 0.4em; text-transform: uppercase; color: rgba(0,255,80,0.5); margin-bottom: 12px; }
+  .title { font-size: 44px; font-weight: 700; letter-spacing: 0.12em; color: #00ff50; animation: pixel-glitch 0.5s steps(1) infinite; }
+  @keyframes pixel-glitch {
+    0%  { text-shadow: 2px 0 #ff0040, -2px 0 #00ffff; transform: translate(0); }
+    20% { text-shadow: -3px 0 #ff0040, 3px 0 #00ffff; transform: translate(2px,-1px); }
+    40% { text-shadow: 2px 0 #ff0040, -2px 0 #00ffff; transform: translate(-1px,0); }
+    60% { text-shadow: -1px 0 #ff0040, 1px 0 #00ffff; transform: translate(0); }
+    80% { text-shadow: 3px 0 #ff0040, -3px 0 #00ffff; transform: translate(1px,1px); }
+    100%{ text-shadow: 2px 0 #ff0040, -2px 0 #00ffff; transform: translate(0); }
+  }
+  .sub { font-size: 10px; letter-spacing: 0.4em; color: rgba(0,255,80,0.3); text-transform: uppercase; margin-top: 12px; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="content">
+  <p class="label">Pixel</p>
+  <h1 class="title">CRASH</h1>
+  <p class="sub">Pixel Crash</p>
+</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+const PX = 6;
+const CW = Math.ceil(800/PX), CH = Math.ceil(480/PX);
+c.width = CW; c.height = CH;
+const W = CW, H = CH;
+ctx.imageSmoothingEnabled = false;
+let t = 0;
+const pixels = [];
+for(let x=0;x<W;x++) for(let y=0;y<H;y++) {
+  if(Math.random()<0.03) pixels.push({x,y,vx:(Math.random()-0.5)*2,vy:(Math.random()-0.5)*2,
+    color:`hsl(${Math.random()*60+100},100%,50%)`,life:1});
+}
+function draw() {
+  t++;
+  ctx.fillStyle='rgba(0,0,0,0.15)';
+  ctx.fillRect(0,0,W,H);
+  if(t%4===0) {
+    const y=Math.floor(Math.random()*H);
+    const offset=Math.floor((Math.random()-0.5)*8);
+    const img=ctx.getImageData(0,y,W,1);
+    ctx.putImageData(img,offset,y);
+  }
+  pixels.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.vy+=0.05; p.life-=0.008;
+    if(p.life<=0){p.x=Math.random()*W;p.y=Math.random()*H;p.life=0.5+Math.random()*0.5;p.vx=(Math.random()-0.5)*2;p.vy=(Math.random()-0.5)*2;}
+    ctx.fillStyle=p.color.replace('50%',`${Math.floor(p.life*50)}%`);
+    ctx.fillRect(Math.floor(p.x),Math.floor(p.y),1,1);
+  });
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Neon Bleed</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #020008; display: grid; place-items: center; min-height: 480px; overflow: hidden; font-family: "Segoe UI", sans-serif; }
+  canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+  .content { position: relative; z-index: 2; text-align: center; }
+  .label { font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase; color: rgba(255,0,200,0.4); margin-bottom: 12px; }
+  .title { font-size: 46px; font-weight: 900; letter-spacing: 0.1em; color: white; animation: neon-bleed 0.8s steps(2) infinite; }
+  @keyframes neon-bleed {
+    0%  { text-shadow: 4px 0 rgba(255,0,200,0.8), -4px 0 rgba(0,255,255,0.8); }
+    25% { text-shadow: -5px 2px rgba(255,0,200,0.9), 5px -2px rgba(0,255,100,0.9); }
+    50% { text-shadow: 3px -3px rgba(255,100,0,0.8), -3px 3px rgba(0,100,255,0.8); }
+    75% { text-shadow: -4px 0 rgba(255,0,200,0.7), 4px 0 rgba(0,255,255,0.7); }
+  }
+  .sub { font-size: 10px; letter-spacing: 0.4em; color: rgba(255,0,200,0.3); text-transform: uppercase; margin-top: 12px; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="content">
+  <p class="label">Glitch</p>
+  <h1 class="title">BLEED</h1>
+  <p class="sub">Neon Bleed</p>
+</div>
+<script>
+const c=document.getElementById('c');
+const ctx=c.getContext('2d');
+c.width=800;c.height=480;
+const W=c.width,H=c.height;
+let t=0;
+const lines=Array.from({length:20},()=>({y:Math.random()*H,w:Math.random()*W*0.6+W*0.2,h:1+Math.random()*3,hue:Math.random()*360,speed:0.2+Math.random()*0.8,alpha:0.3+Math.random()*0.4}));
+function draw(){
+  t+=0.02;
+  ctx.fillStyle='rgba(2,0,8,0.08)';
+  ctx.fillRect(0,0,W,H);
+  lines.forEach(l=>{
+    l.y+=l.speed;
+    if(l.y>H) l.y=0;
+    l.hue=(l.hue+1)%360;
+    const x=(W-l.w)/2;
+    const grad=ctx.createLinearGradient(x,0,x+l.w,0);
+    grad.addColorStop(0,'transparent');
+    grad.addColorStop(0.2,`hsla(${l.hue},100%,60%,${l.alpha})`);
+    grad.addColorStop(0.5,`hsla(${(l.hue+120)%360},100%,70%,${l.alpha*1.5})`);
+    grad.addColorStop(0.8,`hsla(${(l.hue+240)%360},100%,60%,${l.alpha})`);
+    grad.addColorStop(1,'transparent');
+    ctx.fillStyle=grad;
+    ctx.fillRect(x,l.y,l.w,l.h);
+  });
+  if(Math.random()<0.05){
+    const y=Math.random()*H;
+    ctx.fillStyle=`rgba(255,255,255,${Math.random()*0.04})`;
+    ctx.fillRect(0,y,W,Math.random()*3);
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

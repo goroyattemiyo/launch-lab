@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Blood Moon</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #050000; display: grid; place-items: center; min-height: 480px; overflow: hidden; font-family: Georgia, serif; }
+  canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+  .content { position: relative; z-index: 2; text-align: center; animation: horror-rise 2s cubic-bezier(0.22,1,0.36,1) forwards; opacity: 0; }
+  @keyframes horror-rise { 0% { opacity:0; transform: translateY(30px) scale(0.95); } 60% { opacity:0.7; } 100% { opacity:1; transform: translateY(0) scale(1); } }
+  .label { font-size: 9px; letter-spacing: 0.6em; text-transform: uppercase; color: rgba(180,20,20,0.5); margin-bottom: 14px; font-family: "Segoe UI", sans-serif; }
+  .title { font-size: 44px; font-weight: 400; letter-spacing: 0.2em; color: rgba(220,60,40,0.9); animation: blood-drip 4s ease-in-out infinite; }
+  @keyframes blood-drip { 0%,100% { text-shadow: 0 0 20px rgba(200,0,0,0.4), 0 4px 8px rgba(150,0,0,0.3); } 50% { text-shadow: 0 0 40px rgba(220,0,0,0.7), 0 8px 16px rgba(150,0,0,0.5); } }
+  .sub { font-size: 10px; letter-spacing: 0.4em; color: rgba(150,30,30,0.4); text-transform: uppercase; margin-top: 14px; font-family: "Segoe UI", sans-serif; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="content">
+  <p class="label">Horror</p>
+  <h1 class="title">BLOOD</h1>
+  <p class="sub">Moon</p>
+</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = 800; c.height = 480;
+const W = c.width, H = c.height;
+let t = 0;
+const drips = Array.from({length: 12}, (_, i) => ({
+  x: 50 + i * (W-100)/11, y: -Math.random()*200,
+  speed: 0.3 + Math.random()*0.4, width: 1 + Math.random()*2, len: 30 + Math.random()*60
+}));
+function draw() {
+  t += 0.012;
+  ctx.fillStyle = 'rgba(5,0,0,0.06)';
+  ctx.fillRect(0, 0, W, H);
+  const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, 220);
+  grad.addColorStop(0, `rgba(120,0,0,${0.06 + Math.sin(t)*0.02})`);
+  grad.addColorStop(0.5, `rgba(80,0,0,${0.04 + Math.sin(t*0.7)*0.02})`);
+  grad.addColorStop(1, 'transparent');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+  drips.forEach(d => {
+    d.y += d.speed;
+    if (d.y > H + d.len) d.y = -d.len - Math.random()*100;
+    const alpha = 0.3 + Math.sin(t + d.x) * 0.1;
+    ctx.strokeStyle = `rgba(180,10,10,${alpha})`;
+    ctx.lineWidth = d.width;
+    ctx.beginPath();
+    ctx.moveTo(d.x, d.y);
+    ctx.lineTo(d.x + Math.sin(t*0.5 + d.x) * 3, d.y + d.len);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(d.x + Math.sin(t*0.5+d.x)*3, d.y + d.len, d.width*1.5, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(160,10,10,${alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

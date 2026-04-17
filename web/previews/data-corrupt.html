@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Data Corrupt</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; display: grid; place-items: center; min-height: 480px; overflow: hidden; font-family: "Courier New", monospace; }
+  canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+  .content { position: relative; z-index: 2; text-align: center; }
+  .label { font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase; color: rgba(0,255,100,0.4); margin-bottom: 12px; }
+  .title { font-size: 44px; font-weight: 700; letter-spacing: 0.12em; color: rgba(0,255,100,0.9); animation: corrupt 0.15s steps(1) infinite; }
+  @keyframes corrupt { 0%{text-shadow:2px 0 #ff0040,-2px 0 #00ffff;} 33%{text-shadow:-2px 0 #ff0040,2px 0 #00ffff;transform:translate(1px,0);} 66%{text-shadow:1px 1px #ff0040,-1px -1px #00ffff;transform:translate(-1px,0);} 100%{text-shadow:2px 0 #ff0040,-2px 0 #00ffff;} }
+  .sub { font-size: 10px; letter-spacing: 0.4em; color: rgba(0,200,80,0.3); text-transform: uppercase; margin-top: 12px; }
+  .error { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); font-size: 9px; color: rgba(255,60,60,0.6); letter-spacing: 0.1em; animation: err-blink 2s steps(1) infinite; z-index: 3; }
+  @keyframes err-blink { 0%,49%{opacity:1;} 50%,100%{opacity:0;} }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="content">
+  <p class="label">Glitch</p>
+  <h1 class="title">DATA</h1>
+  <p class="sub">Corrupt</p>
+</div>
+<div class="error">ERROR_0x4F3A :: MEMORY CORRUPT</div>
+<script>
+const c=document.getElementById('c');
+const ctx=c.getContext('2d');
+c.width=800;c.height=480;
+const W=c.width,H=c.height;
+let t=0;
+const HEX='0123456789ABCDEF';
+function draw(){
+  t++;
+  ctx.fillStyle='rgba(0,0,0,0.2)';
+  ctx.fillRect(0,0,W,H);
+  ctx.font='10px Courier New';
+  for(let i=0;i<8;i++){
+    const x=Math.random()*W,y=Math.random()*H;
+    const str=Array.from({length:8},()=>HEX[Math.floor(Math.random()*16)]).join('');
+    ctx.fillStyle=`rgba(0,${150+Math.floor(Math.random()*105)},50,${0.2+Math.random()*0.3})`;
+    ctx.fillText(str,x,y);
+  }
+  if(t%5===0){
+    const y=Math.random()*H,h=2+Math.random()*4;
+    const x=Math.random()*W*0.5;
+    ctx.fillStyle=`rgba(0,255,80,${0.03+Math.random()*0.05})`;
+    ctx.fillRect(x,y,Math.random()*W*0.6,h);
+  }
+  if(Math.random()<0.02){
+    const y=Math.floor(Math.random()*H/2)*2;
+    const img=ctx.getImageData(0,y,W,2);
+    ctx.putImageData(img,Math.floor((Math.random()-0.5)*20),y+Math.floor(Math.random()*4));
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

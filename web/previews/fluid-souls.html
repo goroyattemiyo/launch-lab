@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fluid Souls</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; display: grid; place-items: center; min-height: 480px; overflow: hidden; font-family: "Segoe UI", sans-serif; }
+  canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+  .content { position: relative; z-index: 2; text-align: center; }
+  .label { font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 12px; }
+  .title { font-size: 44px; font-weight: 200; letter-spacing: 0.28em; color: rgba(255,255,255,0.9); animation: fluid-glow 3s ease-in-out infinite; }
+  @keyframes fluid-glow { 0%,100% { text-shadow: 0 0 20px rgba(100,255,200,0.3); } 50% { text-shadow: 0 0 40px rgba(100,255,200,0.6), 0 0 80px rgba(0,200,255,0.3); } }
+  .sub { font-size: 10px; letter-spacing: 0.4em; color: rgba(100,255,200,0.3); text-transform: uppercase; margin-top: 12px; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="content">
+  <p class="label">Psychedelic</p>
+  <h1 class="title">FLUID</h1>
+  <p class="sub">Souls</p>
+</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = 800; c.height = 480;
+const W = c.width, H = c.height;
+let t = 0;
+function metaball(x, y, cx, cy, r) {
+  const d = Math.sqrt((x-cx)**2 + (y-cy)**2);
+  return r * r / (d * d + 0.001);
+}
+const balls = Array.from({length: 5}, (_, i) => ({
+  x: W/2 + Math.cos(i/5*Math.PI*2)*120,
+  y: H/2 + Math.sin(i/5*Math.PI*2)*80,
+  r: 60 + i*10, hue: i*72, phase: i*Math.PI*0.4
+}));
+const imgData = ctx.createImageData(W, H);
+function draw() {
+  t += 0.015;
+  balls.forEach((b, i) => {
+    b.x = W/2 + Math.cos(t*0.6 + b.phase)*150 + Math.sin(t*0.3+i)*50;
+    b.y = H/2 + Math.sin(t*0.5 + b.phase)*100 + Math.cos(t*0.4+i)*40;
+    b.hue = (b.hue + 0.3) % 360;
+  });
+  for (let x = 0; x < W; x += 2) {
+    for (let y = 0; y < H; y += 2) {
+      let sum = 0, hSum = 0;
+      balls.forEach(b => {
+        const v = metaball(x, y, b.x, b.y, b.r);
+        sum += v; hSum += v * b.hue;
+      });
+      const idx = (y * W + x) * 4;
+      if (sum > 0.8) {
+        const h = hSum / sum;
+        const s = 80, l = 45 + sum * 5;
+        const [r,g,bl] = hslToRgb(h/360, s/100, Math.min(l/100, 0.7));
+        imgData.data[idx] = r; imgData.data[idx+1] = g; imgData.data[idx+2] = bl; imgData.data[idx+3] = Math.min(sum * 150, 220);
+      } else {
+        imgData.data[idx+3] = Math.max(0, imgData.data[idx+3] - 15);
+      }
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+  requestAnimationFrame(draw);
+}
+function hslToRgb(h,s,l){
+  let r,g,b;
+  if(s===0){r=g=b=l;}else{
+    const q=l<0.5?l*(1+s):l+s-l*s, p=2*l-q;
+    r=hue2rgb(p,q,h+1/3); g=hue2rgb(p,q,h); b=hue2rgb(p,q,h-1/3);
+  }
+  return [r*255,g*255,b*255];
+}
+function hue2rgb(p,q,t){if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;}
+draw();
+</script>
+</body>
+</html>

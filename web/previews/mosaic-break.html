@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mosaic Break</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #060608; display: grid; place-items: center; min-height: 480px; overflow: hidden; font-family: "Segoe UI", sans-serif; }
+  canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+  .content { position: relative; z-index: 2; text-align: center; }
+  .label { font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase; color: rgba(150,150,255,0.4); margin-bottom: 12px; }
+  .title { font-size: 44px; font-weight: 300; letter-spacing: 0.28em; color: rgba(200,200,255,0.9); animation: mosaic-pulse 2s ease-in-out infinite; }
+  @keyframes mosaic-pulse { 0%,100%{text-shadow:0 0 20px rgba(100,100,255,0.3);} 50%{text-shadow:0 0 40px rgba(100,100,255,0.6);} }
+  .sub { font-size: 10px; letter-spacing: 0.4em; color: rgba(150,150,255,0.3); text-transform: uppercase; margin-top: 12px; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="content">
+  <p class="label">Pixel</p>
+  <h1 class="title">MOSAIC</h1>
+  <p class="sub">Break</p>
+</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = 800; c.height = 480;
+const W=c.width,H=c.height;
+const SZ=20;
+const COLS=Math.ceil(W/SZ), ROWS=Math.ceil(H/SZ);
+let t=0;
+const tiles=[];
+for(let col=0;col<COLS;col++) for(let row=0;row<ROWS;row++) {
+  const hue=200+Math.random()*60;
+  tiles.push({col,row,hue,sat:40+Math.random()*40,lit:20+Math.random()*30,
+    vx:0,vy:0,x:col*SZ,y:row*SZ,exploded:false,delay:Math.random()*180});
+}
+function draw(){
+  t++;
+  ctx.fillStyle='rgba(6,6,8,0.2)';
+  ctx.fillRect(0,0,W,H);
+  tiles.forEach(tile=>{
+    if(!tile.exploded && t>tile.delay){
+      tile.exploded=true;
+      const cx=tile.col*SZ+SZ/2, cy=tile.row*SZ+SZ/2;
+      const dx=cx-W/2, dy=cy-H/2;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      tile.vx=(dx/dist)*(1+Math.random()*2);
+      tile.vy=(dy/dist)*(1+Math.random()*2)+(-2-Math.random()*2);
+    }
+    if(tile.exploded){tile.x+=tile.vx;tile.y+=tile.vy;tile.vy+=0.08;tile.sat=Math.max(0,tile.sat-0.3);}
+    const alpha=tile.exploded?Math.max(0,1-(tile.y-tile.row*SZ)/300):0.7;
+    ctx.fillStyle=`hsla(${tile.hue},${tile.sat}%,${tile.lit}%,${alpha})`;
+    ctx.fillRect(tile.x,tile.y,SZ-1,SZ-1);
+  });
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

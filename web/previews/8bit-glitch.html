@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>8Bit Glitch</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; display: grid; place-items: center; min-height: 480px; overflow: hidden; font-family: "Courier New", monospace; image-rendering: pixelated; }
+  canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+  .content { position: relative; z-index: 2; text-align: center; }
+  .label { font-size: 9px; letter-spacing: 0.4em; text-transform: uppercase; color: rgba(255,200,0,0.5); margin-bottom: 12px; }
+  .title { font-size: 44px; font-weight: 900; letter-spacing: 0.08em; color: #ffc800; text-shadow: 3px 3px #ff4000, -1px -1px #00aaff; animation: bit-shake 0.2s steps(2) infinite; }
+  @keyframes bit-shake { 0%{transform:translate(0,0);} 25%{transform:translate(2px,0);} 50%{transform:translate(0,1px);} 75%{transform:translate(-2px,0);} }
+  .sub { font-size: 10px; letter-spacing: 0.4em; color: rgba(255,200,0,0.3); text-transform: uppercase; margin-top: 12px; }
+  .score { position: absolute; top: 20px; left: 20px; font-size: 11px; color: rgba(255,255,255,0.5); letter-spacing: 0.1em; z-index: 3; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="score" id="score">SCORE: 00000</div>
+<div class="content">
+  <p class="label">8-Bit</p>
+  <h1 class="title">GLITCH</h1>
+  <p class="sub">8Bit Glitch</p>
+</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+const PX = 4;
+const CW = Math.ceil(800/PX), CH = Math.ceil(480/PX);
+c.width = CW; c.height = CH;
+ctx.imageSmoothingEnabled = false;
+const W=CW,H=CH;
+const PALETTE=['#000','#fff','#f00','#0f0','#00f','#ff0','#0ff','#f0f','#f80','#08f','#f08','#80f'];
+let t=0, score=0;
+const tiles=[];
+for(let x=0;x<W;x+=2) for(let y=0;y<H;y+=2) {
+  if(Math.random()<0.04) tiles.push({x,y,col:PALETTE[Math.floor(Math.random()*PALETTE.length)],life:Math.random()});
+}
+const scoreEl=document.getElementById('score');
+function draw(){
+  t++;
+  ctx.fillStyle='rgba(0,0,0,0.2)';
+  ctx.fillRect(0,0,W,H);
+  if(t%3===0){
+    const y=Math.floor(Math.random()*H);
+    const sl=Math.floor(Math.random()*W*0.3);
+    const img=ctx.getImageData(0,y,W,1);
+    ctx.putImageData(img,sl,y);
+  }
+  tiles.forEach(tile=>{
+    tile.life-=0.005;
+    if(tile.life<=0){tile.x=Math.floor(Math.random()*W/2)*2;tile.y=Math.floor(Math.random()*H/2)*2;tile.col=PALETTE[Math.floor(Math.random()*PALETTE.length)];tile.life=0.3+Math.random()*0.7;score++;scoreEl.textContent='SCORE: '+String(score).padStart(5,'0');}
+    ctx.fillStyle=tile.col;
+    ctx.globalAlpha=tile.life*0.8;
+    ctx.fillRect(tile.x,tile.y,2,2);
+  });
+  ctx.globalAlpha=1;
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
