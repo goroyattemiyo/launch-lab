@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Toxic Bars</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #030800; display: grid; place-items: center; min-height: 100vh; font-family: "Segoe UI", sans-serif; }
+  .stage { position: relative; width: 100%; min-width: 320px; min-height: 480px; display: grid; place-items: center; overflow: hidden; background: #030800; }
+  .bars { position: absolute; bottom: 0; left: 0; width: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 5px; padding: 0 35px; height: 160px; }
+  .bar { flex: 1; max-width: 16px; border-radius: 3px 3px 0 0; background: linear-gradient(to top, rgba(80,255,0,0.85), rgba(180,255,50,0.4)); animation: bar-rise 1.4s ease-out forwards, bar-pulse 2.2s ease-in-out infinite 1.4s; }
+  .bar:nth-child(1) { height: 55px;  animation-delay: 0.0s, 1.4s; }
+  .bar:nth-child(2) { height: 95px;  animation-delay: 0.12s, 1.52s; }
+  .bar:nth-child(3) { height: 125px; animation-delay: 0.24s, 1.64s; }
+  .bar:nth-child(4) { height: 145px; animation-delay: 0.18s, 1.58s; }
+  .bar:nth-child(5) { height: 115px; animation-delay: 0.30s, 1.70s; }
+  .bar:nth-child(6) { height: 75px;  animation-delay: 0.06s, 1.46s; }
+  .bar:nth-child(7) { height: 45px;  animation-delay: 0.0s,  1.4s; }
+  @keyframes bar-rise { from { height: 0; opacity: 0; } to { opacity: 1; } }
+  @keyframes bar-pulse { 0%,100% { filter: brightness(0.7); } 50% { filter: brightness(1.4) drop-shadow(0 0 8px rgba(80,255,0,0.7)); } }
+  .content { position: relative; z-index: 2; text-align: center; margin-bottom: 80px; animation: rise-in 1.0s cubic-bezier(0.22,1,0.36,1) forwards; }
+  @keyframes rise-in { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+  .label { font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase; color: rgba(80,255,0,0.4); margin-bottom: 12px; }
+  .title { font-size: 44px; font-weight: 700; letter-spacing: 0.18em; color: rgba(180,255,100,0.95); animation: title-glow 2.2s ease-in-out infinite; }
+  @keyframes title-glow { 0%,100% { text-shadow: 0 0 20px rgba(80,255,0,0.3); } 50% { text-shadow: 0 0 40px rgba(80,255,0,0.7), 0 0 80px rgba(40,200,0,0.3); } }
+  .divider { width: 24px; height: 1px; background: rgba(80,255,0,0.4); margin: 14px auto; }
+  .sub { font-size: 10px; letter-spacing: 0.35em; color: rgba(80,255,0,0.3); text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="bars">
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+  </div>
+  <div class="content"><p class="label">Sci-Fi / Game</p><h1 class="title">TOXIC</h1><div class="divider"></div><p class="sub">Bars</p></div>
+</div>
+</body>
+</html>

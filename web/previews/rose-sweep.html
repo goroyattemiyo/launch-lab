@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rose Sweep</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0306; display: grid; place-items: center; min-height: 100vh; font-family: "Segoe UI", sans-serif; }
+  .stage { position: relative; width: 100%; min-width: 320px; min-height: 480px; display: grid; place-items: center; overflow: hidden; background: #0a0306; }
+  .sweep { position: absolute; top: 0; left: -100%; width: 60%; height: 100%; background: linear-gradient(105deg, transparent 30%, rgba(255,120,160,0.12) 50%, rgba(255,180,200,0.06) 55%, transparent 70%); animation: sweep 3s cubic-bezier(0.4,0,0.6,1) infinite; animation-delay: 0.6s; }
+  @keyframes sweep { 0% { left: -100%; } 65%,100% { left: 160%; } }
+  .petal-glow { position: absolute; width: 8px; height: 8px; border-radius: 50% 0 50% 0; filter: blur(1px); animation: petal-float 4s ease-in-out infinite; }
+  .pg1 { background: rgba(255,120,160,0.5); top: 28%; left: 20%; animation-delay: 0s; }
+  .pg2 { background: rgba(255,160,190,0.4); top: 60%; right: 22%; animation-delay: 1.3s; }
+  .pg3 { background: rgba(255,100,140,0.6); bottom: 30%; left: 55%; animation-delay: 2.6s; width: 6px; height: 6px; }
+  @keyframes petal-float { 0%,100% { transform: translateY(0) rotate(0deg); opacity: 0.5; } 50% { transform: translateY(-12px) rotate(20deg); opacity: 1; } }
+  .content { position: relative; z-index: 2; text-align: center; animation: rise-in 1.2s cubic-bezier(0.22,1,0.36,1) forwards; }
+  @keyframes rise-in { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+  .label { font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase; color: rgba(255,120,160,0.4); margin-bottom: 12px; }
+  .title { font-size: 44px; font-weight: 300; letter-spacing: 0.28em; color: rgba(255,220,230,0.92); font-family: Georgia, serif; animation: title-glow 3s ease-in-out infinite; }
+  @keyframes title-glow { 0%,100% { text-shadow: 0 0 20px rgba(255,120,160,0.2); } 50% { text-shadow: 0 0 40px rgba(255,120,160,0.5), 0 0 70px rgba(255,80,120,0.2); } }
+  .divider { width: 40px; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,120,160,0.5), transparent); margin: 14px auto; }
+  .sub { font-size: 10px; letter-spacing: 0.35em; color: rgba(255,120,160,0.3); text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="sweep"></div>
+  <div class="petal-glow pg1"></div><div class="petal-glow pg2"></div><div class="petal-glow pg3"></div>
+  <div class="content"><p class="label">Brand Intro</p><h1 class="title">ROSE</h1><div class="divider"></div><p class="sub">Sweep</p></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lava Bloom</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #080200; display: grid; place-items: center; min-height: 100vh; font-family: "Segoe UI", sans-serif; }
+  .stage { position: relative; width: 100%; min-width: 320px; min-height: 480px; display: grid; place-items: center; overflow: hidden; background: #080200; }
+  .blob { position: absolute; border-radius: 50%; filter: blur(40px); animation: bloom ease-in-out infinite; }
+  .blob-1 { width: 280px; height: 280px; background: radial-gradient(circle, rgba(255,80,0,0.2), transparent 70%); animation-duration: 3.5s; animation-delay: 0s; }
+  .blob-2 { width: 200px; height: 200px; background: radial-gradient(circle, rgba(255,140,0,0.18), transparent 70%); animation-duration: 4s; animation-delay: 0.8s; }
+  .blob-3 { width: 120px; height: 120px; background: radial-gradient(circle, rgba(255,200,50,0.2), transparent 70%); animation-duration: 3s; animation-delay: 1.6s; }
+  @keyframes bloom { 0%,100% { transform: scale(0.85); opacity: 0.5; } 50% { transform: scale(1.15); opacity: 1; } }
+  .crack { position: absolute; width: 1px; height: 40px; background: linear-gradient(to bottom, transparent, rgba(255,120,0,0.4), transparent); animation: crack-glow 3.5s ease-in-out infinite; }
+  .cr1 { top: 28%; left: 32%; transform: rotate(20deg); animation-delay: 0s; }
+  .cr2 { top: 50%; right: 28%; transform: rotate(-15deg); animation-delay: 1.2s; height: 30px; }
+  @keyframes crack-glow { 0%,100% { opacity: 0.3; } 50% { opacity: 0.8; filter: drop-shadow(0 0 3px rgba(255,120,0,0.6)); } }
+  .content { position: relative; z-index: 2; text-align: center; animation: rise-in 1.4s cubic-bezier(0.22,1,0.36,1) forwards; }
+  @keyframes rise-in { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+  .label { font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase; color: rgba(255,120,0,0.4); margin-bottom: 12px; }
+  .title { font-size: 42px; font-weight: 400; letter-spacing: 0.22em; color: rgba(255,220,160,0.92); animation: title-glow 3.5s ease-in-out infinite; }
+  @keyframes title-glow { 0%,100% { text-shadow: 0 0 20px rgba(255,80,0,0.3); } 50% { text-shadow: 0 0 40px rgba(255,80,0,0.6), 0 0 80px rgba(255,140,0,0.2); } }
+  .divider { width: 28px; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,120,0,0.5), transparent); margin: 14px auto; }
+  .sub { font-size: 10px; letter-spacing: 0.35em; color: rgba(255,120,0,0.3); text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div>
+  <div class="crack cr1"></div><div class="crack cr2"></div>
+  <div class="content"><p class="label">App Launch</p><h1 class="title">LAVA</h1><div class="divider"></div><p class="sub">Bloom</p></div>
+</div>
+</body>
+</html>

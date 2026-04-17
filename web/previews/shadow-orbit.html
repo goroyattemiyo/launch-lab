@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Shadow Orbit</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #020202; display: grid; place-items: center; min-height: 100vh; font-family: "Segoe UI", sans-serif; }
+  .stage { position: relative; width: 100%; min-width: 320px; min-height: 480px; display: grid; place-items: center; overflow: hidden; background: #020202; }
+  .orbit-ring { position: absolute; border-radius: 50%; }
+  .orbit-1 { width: 270px; height: 270px; border: 1px solid rgba(255,255,255,0.06); animation: orbit-spin 8s linear infinite; }
+  .orbit-2 { width: 200px; height: 200px; border: 1px solid rgba(255,255,255,0.08); animation: orbit-spin 5s linear infinite reverse; }
+  .orbit-3 { width: 130px; height: 130px; border: 1px solid rgba(255,255,255,0.1); animation: orbit-spin 6s linear infinite; }
+  @keyframes orbit-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .dot { position: absolute; border-radius: 50%; }
+  .dot-1 { width: 5px; height: 5px; background: rgba(255,255,255,0.7); box-shadow: 0 0 6px rgba(255,255,255,0.4); animation: dot-o1 8s linear infinite; }
+  .dot-2 { width: 4px; height: 4px; background: rgba(255,255,255,0.5); animation: dot-o2 5s linear infinite reverse; }
+  .dot-3 { width: 3px; height: 3px; background: rgba(255,255,255,0.6); animation: dot-o3 6s linear infinite; }
+  @keyframes dot-o1 { from { transform: rotate(0deg) translateX(135px); } to { transform: rotate(360deg) translateX(135px); } }
+  @keyframes dot-o2 { from { transform: rotate(120deg) translateX(100px); } to { transform: rotate(480deg) translateX(100px); } }
+  @keyframes dot-o3 { from { transform: rotate(240deg) translateX(65px); } to { transform: rotate(600deg) translateX(65px); } }
+  .content { position: relative; z-index: 2; text-align: center; animation: rise-in 1.5s cubic-bezier(0.22,1,0.36,1) forwards; }
+  @keyframes rise-in { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+  .label { font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase; color: rgba(255,255,255,0.2); margin-bottom: 12px; }
+  .title { font-size: 40px; font-weight: 100; letter-spacing: 0.38em; color: rgba(255,255,255,0.75); animation: title-fade 8s ease-in-out infinite; }
+  @keyframes title-fade { 0%,100% { opacity: 0.6; } 50% { opacity: 0.9; text-shadow: 0 0 30px rgba(255,255,255,0.15); } }
+  .divider { width: 30px; height: 1px; background: rgba(255,255,255,0.15); margin: 14px auto; }
+  .sub { font-size: 10px; letter-spacing: 0.35em; color: rgba(255,255,255,0.15); text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="orbit-ring orbit-1"></div><div class="orbit-ring orbit-2"></div><div class="orbit-ring orbit-3"></div>
+  <div class="dot dot-1"></div><div class="dot dot-2"></div><div class="dot dot-3"></div>
+  <div class="content"><p class="label">Brand Intro</p><h1 class="title">SHADOW</h1><div class="divider"></div><p class="sub">Orbit</p></div>
+</div>
+</body>
+</html>

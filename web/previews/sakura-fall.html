@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sakura Fall</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0c0608; display: grid; place-items: center; min-height: 100vh; font-family: "Segoe UI", sans-serif; }
+  .stage { position: relative; width: 100%; min-width: 320px; min-height: 480px; display: grid; place-items: center; overflow: hidden; background: #0c0608; }
+  .petal { position: absolute; width: 8px; height: 8px; border-radius: 50% 0 50% 0; background: rgba(255,180,200,0.7); filter: blur(0.5px); animation: petal-fall linear infinite; }
+  .p1 { left: 10%; animation-duration: 4s; animation-delay: 0s; top: -10px; }
+  .p2 { left: 25%; animation-duration: 5s; animation-delay: 0.8s; top: -10px; width: 6px; height: 6px; }
+  .p3 { left: 45%; animation-duration: 4.5s; animation-delay: 1.6s; top: -10px; }
+  .p4 { left: 65%; animation-duration: 5.5s; animation-delay: 0.3s; top: -10px; width: 10px; height: 10px; }
+  .p5 { left: 80%; animation-duration: 4s; animation-delay: 1.2s; top: -10px; width: 6px; height: 6px; }
+  .p6 { left: 55%; animation-duration: 6s; animation-delay: 2s; top: -10px; }
+  @keyframes petal-fall { 0% { transform: translateY(0) rotate(0deg) translateX(0); opacity: 0.8; } 50% { transform: translateY(240px) rotate(180deg) translateX(30px); opacity: 0.9; } 100% { transform: translateY(500px) rotate(360deg) translateX(-20px); opacity: 0; } }
+  .glow { position: absolute; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(255,150,180,0.08), transparent 70%); filter: blur(20px); animation: glow-pulse 3s ease-in-out infinite; }
+  @keyframes glow-pulse { 0%,100% { transform: scale(0.9); opacity: 0.6; } 50% { transform: scale(1.1); opacity: 1; } }
+  .content { position: relative; z-index: 2; text-align: center; animation: rise-in 1.5s cubic-bezier(0.22,1,0.36,1) forwards; }
+  @keyframes rise-in { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+  .label { font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase; color: rgba(255,150,180,0.4); margin-bottom: 12px; }
+  .title { font-size: 42px; font-weight: 300; letter-spacing: 0.25em; color: rgba(255,220,230,0.9); animation: title-glow 3s ease-in-out infinite; }
+  @keyframes title-glow { 0%,100% { text-shadow: 0 0 20px rgba(255,150,180,0.2); } 50% { text-shadow: 0 0 40px rgba(255,150,180,0.5); } }
+  .divider { width: 30px; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,150,180,0.5), transparent); margin: 14px auto; }
+  .sub { font-size: 10px; letter-spacing: 0.35em; color: rgba(255,150,180,0.3); text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="glow"></div>
+  <div class="petal p1"></div><div class="petal p2"></div><div class="petal p3"></div>
+  <div class="petal p4"></div><div class="petal p5"></div><div class="petal p6"></div>
+  <div class="content"><p class="label">Portfolio</p><h1 class="title">桜</h1><div class="divider"></div><p class="sub">Sakura Fall</p></div>
+</div>
+</body>
+</html>

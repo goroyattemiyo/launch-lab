@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Neon Orbit</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #020208; display: grid; place-items: center; min-height: 100vh; font-family: "Segoe UI", sans-serif; }
+  .stage { position: relative; width: 100%; min-width: 320px; min-height: 480px; display: grid; place-items: center; overflow: hidden; background: #020208; }
+  .orbit-ring { position: absolute; border-radius: 50%; border-style: solid; border-color: transparent; }
+  .orbit-1 { width: 260px; height: 260px; border-width: 1px; border-top-color: rgba(0,255,200,0.6); border-right-color: rgba(0,255,200,0.2); animation: orbit-spin 3s linear infinite; }
+  .orbit-2 { width: 190px; height: 190px; border-width: 1px; border-bottom-color: rgba(255,0,200,0.6); border-left-color: rgba(255,0,200,0.2); animation: orbit-spin 2s linear infinite reverse; }
+  .orbit-3 { width: 120px; height: 120px; border-width: 1px; border-top-color: rgba(0,150,255,0.6); animation: orbit-spin 4s linear infinite; }
+  @keyframes orbit-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .dot { position: absolute; width: 6px; height: 6px; border-radius: 50%; }
+  .dot-1 { background: rgba(0,255,200,0.9); box-shadow: 0 0 8px rgba(0,255,200,0.8); animation: dot-orbit-1 3s linear infinite; }
+  .dot-2 { background: rgba(255,0,200,0.9); box-shadow: 0 0 8px rgba(255,0,200,0.8); animation: dot-orbit-2 2s linear infinite reverse; }
+  @keyframes dot-orbit-1 { from { transform: rotate(0deg) translateX(130px); } to { transform: rotate(360deg) translateX(130px); } }
+  @keyframes dot-orbit-2 { from { transform: rotate(0deg) translateX(95px); } to { transform: rotate(360deg) translateX(95px); } }
+  .content { position: relative; z-index: 2; text-align: center; animation: rise-in 1.2s cubic-bezier(0.22,1,0.36,1) forwards; }
+  @keyframes rise-in { from { opacity:0; transform: scale(0.9); } to { opacity:1; transform: scale(1); } }
+  .label { font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase; color: rgba(0,255,200,0.4); margin-bottom: 12px; }
+  .title { font-size: 38px; font-weight: 700; letter-spacing: 0.2em; color: rgba(200,255,240,0.92); animation: title-glow 2s ease-in-out infinite; }
+  @keyframes title-glow { 0%,100% { text-shadow: 0 0 20px rgba(0,255,200,0.3); } 50% { text-shadow: 0 0 40px rgba(0,255,200,0.6), 0 0 60px rgba(255,0,200,0.2); } }
+  .divider { width: 24px; height: 1px; background: rgba(0,255,200,0.4); margin: 14px auto; }
+  .sub { font-size: 10px; letter-spacing: 0.35em; color: rgba(0,200,255,0.3); text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="orbit-ring orbit-1"></div><div class="orbit-ring orbit-2"></div><div class="orbit-ring orbit-3"></div>
+  <div class="dot dot-1"></div><div class="dot dot-2"></div>
+  <div class="content"><p class="label">Game Start</p><h1 class="title">NEON</h1><div class="divider"></div><p class="sub">Orbit</p></div>
+</div>
+</body>
+</html>

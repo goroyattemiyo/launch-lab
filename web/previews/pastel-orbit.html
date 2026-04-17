@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pastel Orbit</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a080e; display: grid; place-items: center; min-height: 100vh; font-family: "Segoe UI", sans-serif; }
+  .stage { position: relative; width: 100%; min-width: 320px; min-height: 480px; display: grid; place-items: center; overflow: hidden; background: #0a080e; }
+  .orbit-ring { position: absolute; border-radius: 50%; border: 1px dashed; }
+  .orbit-1 { width: 260px; height: 260px; border-color: rgba(255,180,220,0.2); animation: orbit-spin 6s linear infinite; }
+  .orbit-2 { width: 190px; height: 190px; border-color: rgba(180,220,255,0.2); animation: orbit-spin 4s linear infinite reverse; }
+  @keyframes orbit-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .dot { position: absolute; width: 8px; height: 8px; border-radius: 50%; }
+  .dot-1 { background: rgba(255,180,220,0.9); box-shadow: 0 0 6px rgba(255,180,220,0.6); animation: dot-o1 6s linear infinite; }
+  .dot-2 { background: rgba(180,220,255,0.9); box-shadow: 0 0 6px rgba(180,220,255,0.6); animation: dot-o2 4s linear infinite reverse; }
+  .dot-3 { width: 6px; height: 6px; background: rgba(255,220,180,0.9); box-shadow: 0 0 6px rgba(255,220,180,0.6); animation: dot-o3 5s linear infinite; }
+  @keyframes dot-o1 { from { transform: rotate(0deg) translateX(130px); } to { transform: rotate(360deg) translateX(130px); } }
+  @keyframes dot-o2 { from { transform: rotate(0deg) translateX(95px); } to { transform: rotate(360deg) translateX(95px); } }
+  @keyframes dot-o3 { from { transform: rotate(90deg) translateX(130px); } to { transform: rotate(450deg) translateX(130px); } }
+  .content { position: relative; z-index: 2; text-align: center; animation: rise-in 1.4s cubic-bezier(0.22,1,0.36,1) forwards; }
+  @keyframes rise-in { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+  .label { font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase; color: rgba(255,180,220,0.4); margin-bottom: 12px; }
+  .title { font-size: 40px; font-weight: 300; letter-spacing: 0.28em; color: rgba(255,230,240,0.92); animation: title-glow 4s ease-in-out infinite; }
+  @keyframes title-glow { 0%,100% { text-shadow: 0 0 20px rgba(255,180,220,0.2); } 50% { text-shadow: 0 0 40px rgba(255,180,220,0.4), 0 0 60px rgba(180,220,255,0.2); } }
+  .divider { width: 30px; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,180,220,0.5), transparent); margin: 14px auto; }
+  .sub { font-size: 10px; letter-spacing: 0.35em; color: rgba(180,220,255,0.3); text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="orbit-ring orbit-1"></div><div class="orbit-ring orbit-2"></div>
+  <div class="dot dot-1"></div><div class="dot dot-2"></div><div class="dot dot-3"></div>
+  <div class="content"><p class="label">Loading</p><h1 class="title">PASTEL</h1><div class="divider"></div><p class="sub">Orbit</p></div>
+</div>
+</body>
+</html>

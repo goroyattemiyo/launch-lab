@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Void Bloom</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #030308; display: grid; place-items: center; min-height: 100vh; font-family: "Segoe UI", sans-serif; }
+  .stage { position: relative; width: 100%; min-width: 320px; min-height: 480px; display: grid; place-items: center; overflow: hidden; background: #030308; }
+  .blob { position: absolute; border-radius: 50%; filter: blur(50px); animation: bloom 4s ease-in-out infinite; }
+  .blob-1 { width: 280px; height: 280px; background: radial-gradient(circle, rgba(60,30,180,0.25), transparent 70%); animation-delay: 0s; }
+  .blob-2 { width: 200px; height: 200px; background: radial-gradient(circle, rgba(0,100,255,0.2), transparent 70%); animation-delay: 1s; }
+  .blob-3 { width: 120px; height: 120px; background: radial-gradient(circle, rgba(100,200,255,0.15), transparent 70%); animation-delay: 2s; }
+  @keyframes bloom { 0%,100% { transform: scale(0.85); opacity: 0.5; } 50% { transform: scale(1.15); opacity: 1; } }
+  .star { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: white; animation: twinkle 3s ease-in-out infinite; }
+  .s1 { top: 20%; left: 15%; animation-delay: 0s; opacity: 0.3; }
+  .s2 { top: 30%; right: 20%; animation-delay: 0.7s; opacity: 0.5; }
+  .s3 { bottom: 25%; left: 25%; animation-delay: 1.4s; opacity: 0.4; }
+  .s4 { top: 15%; right: 35%; animation-delay: 2.1s; opacity: 0.6; }
+  .s5 { bottom: 35%; right: 15%; animation-delay: 0.3s; opacity: 0.3; }
+  @keyframes twinkle { 0%,100% { opacity: 0.2; transform: scale(1); } 50% { opacity: 1; transform: scale(1.5); } }
+  .content { position: relative; z-index: 2; text-align: center; animation: rise-in 1.6s cubic-bezier(0.22,1,0.36,1) forwards; }
+  @keyframes rise-in { from { opacity:0; transform: translateY(24px); } to { opacity:1; transform: translateY(0); } }
+  .label { font-size: 9px; letter-spacing: 0.5em; text-transform: uppercase; color: rgba(100,150,255,0.4); margin-bottom: 12px; }
+  .title { font-size: 40px; font-weight: 200; letter-spacing: 0.3em; color: rgba(180,200,255,0.88); font-family: Georgia, serif; animation: title-glow 4s ease-in-out infinite; }
+  @keyframes title-glow { 0%,100% { text-shadow: 0 0 20px rgba(60,80,255,0.2); } 50% { text-shadow: 0 0 50px rgba(60,80,255,0.5), 0 0 100px rgba(0,100,255,0.2); } }
+  .divider { width: 40px; height: 1px; background: linear-gradient(90deg, transparent, rgba(100,150,255,0.4), transparent); margin: 14px auto; }
+  .sub { font-size: 10px; letter-spacing: 0.35em; color: rgba(100,150,255,0.3); text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div>
+  <div class="star s1"></div><div class="star s2"></div><div class="star s3"></div><div class="star s4"></div><div class="star s5"></div>
+  <div class="content"><p class="label">App Launch</p><h1 class="title">VOID</h1><div class="divider"></div><p class="sub">Bloom</p></div>
+</div>
+</body>
+</html>
