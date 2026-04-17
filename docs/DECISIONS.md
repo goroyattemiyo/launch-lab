@@ -28,3 +28,7 @@
 - Hero Preview Windowをdisplay:noneに変更（直下にWorksがあるため静的演出は不要と判断）
 - works.jsonのpreviewフィールドを削除（titleToKey()方式に統一済みで完全に未使用のため）
 - Glitch SurrealのcanvasをW=800固定からwindow.innerWidth基準に修正（サムネイル右切れ対応）
+
+## 2026-04-17（追記3）
+- AIからの作業指示はスクリプトファイルではなく、PowerShell／Bash どちらでも流せるコマンドテキストで渡す方針とする
+- 理由：スクリプトファイルは実行ポリシーや保存場所の手間がかかるため
