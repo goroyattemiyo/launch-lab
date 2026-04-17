@@ -90,7 +90,7 @@
 <script>
   const c = document.getElementById('c');
   const ctx = c.getContext('2d');
-  const W = c.width = 800;
+  const W = c.width = window.innerWidth || 600;
   const H = c.height = 480;
 
   const particles = [];
@@ -182,3 +182,4 @@
 </script>
 </body>
 </html>
+
