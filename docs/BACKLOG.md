@@ -53,3 +53,6 @@
 - BrowseセクションとHero Preview Windowを非表示に ✅
 - works.jsonのpreviewフィールド削除 ✅
 - Glitch Surrealのcanvas幅修正 ✅
+
+## 2026-04-17 完了（追記3）
+- hero-grid 1カラム化・中央寄せ対応 ✅
