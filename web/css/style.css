@@ -221,7 +221,9 @@ button {
 
 .hero-grid {
   display: grid;
-  grid-template-columns: 1fr;`n  max-width: 760px;`n  margin: 0 auto;`n  max-width: 760px;`n  margin: 0 auto;
+  grid-template-columns: 1fr;
+  max-width: 760px;
+  margin: 0 auto;
   gap: 28px;
   align-items: center;
 }
@@ -649,7 +651,7 @@ button {
   .works-grid,
   .info-grid.three,
   .info-grid.four {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
 
   .cta-box {
@@ -741,6 +743,8 @@ button {
 .works-card.is-hidden {
   display: none;
 }
+
+
 
 
 
