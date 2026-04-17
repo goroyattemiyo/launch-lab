@@ -48,3 +48,8 @@
 - 英日カテゴリ命名の統一（Cute / きれいめ / wild など）
 - 用途/技術/秒数ピルへの本格フィルター実装（worksタブ追加が前提）
 - モバイル実機確認
+
+## 2026-04-17 完了（追記2）
+- BrowseセクションとHero Preview Windowを非表示に ✅
+- works.jsonのpreviewフィールド削除 ✅
+- Glitch Surrealのcanvas幅修正 ✅

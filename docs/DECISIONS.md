@@ -22,3 +22,9 @@
 - カテゴリタブ並びを「すべて・きれいめ・和風・ゲームSF・奇抜系」に変更（奇抜系を末尾へ、ブランド第一印象を優先）
 - 「すべての作品を見る」リンクを href="#" から href="#works" に修正
 - Developers×3・Request×2 の #リンクに Coming Soon ツールチップを実装（CSS only）
+
+## 2026-04-17（追記2）
+- BrowseセクションをHTML側でdisplay:noneに変更（worksタブで完結するため不要と判断）
+- Hero Preview Windowをdisplay:noneに変更（直下にWorksがあるため静的演出は不要と判断）
+- works.jsonのpreviewフィールドを削除（titleToKey()方式に統一済みで完全に未使用のため）
+- Glitch SurrealのcanvasをW=800固定からwindow.innerWidth基準に修正（サムネイル右切れ対応）
