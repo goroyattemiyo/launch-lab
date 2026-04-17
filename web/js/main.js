@@ -17,15 +17,14 @@ async function loadWorks() {
         const category = work.category || "minimal";
 
         return `
-          <article class="works-card" data-key="${escapeHtml(key)}" data-category="${escapeHtml(category)}">
+          <article class="works-card" data-key="${escapeHtml(key)}" data-category="${escapeHtml(category)}" data-src="${escapeHtml(previewSrc)}">
             <div class="works-thumb">
               <iframe
                 class="thumb-iframe"
-                src="${escapeHtml(previewSrc)}"
+                src=""
                 scrolling="no"
                 tabindex="-1"
                 aria-hidden="true"
-                loading="lazy"
               ></iframe>
               <div class="thumb-overlay"></div>
             </div>
@@ -47,6 +46,8 @@ async function loadWorks() {
       .join("");
 
     initTabs();
+    initLazyLoad();
+    initHoverLoad();
 
     grid.addEventListener("click", (e) => {
       const btn = e.target.closest(".open-modal-btn");
@@ -66,6 +67,52 @@ async function loadWorks() {
   }
 }
 
+// ---- IntersectionObserver：画面内に入ったら読み込み、出たら解放 ----
+function initLazyLoad() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      const card = entry.target;
+      const iframe = card.querySelector(".thumb-iframe");
+      if (!iframe) return;
+
+      if (entry.isIntersecting) {
+        if (!iframe.src || iframe.src === window.location.href) {
+          iframe.src = card.dataset.src;
+        }
+      } else {
+        iframe.src = "";
+      }
+    });
+  }, {
+    rootMargin: "100px 0px",
+    threshold: 0.1
+  });
+
+  document.querySelectorAll(".works-card").forEach((card) => {
+    observer.observe(card);
+  });
+}
+
+// ---- ホバー時だけアニメ再生（pointer-events制御） ----
+function initHoverLoad() {
+  document.querySelectorAll(".works-card").forEach((card) => {
+    const iframe = card.querySelector(".thumb-iframe");
+    if (!iframe) return;
+
+    card.addEventListener("mouseenter", () => {
+      iframe.style.pointerEvents = "none";
+      if (!iframe.src || iframe.src === window.location.href) {
+        iframe.src = card.dataset.src;
+      }
+    });
+
+    card.addEventListener("mouseleave", () => {
+      iframe.style.pointerEvents = "none";
+    });
+  });
+}
+
+// ---- タブ ----
 function initTabs() {
   const tabs = document.querySelectorAll(".works-tab");
   if (!tabs.length) return;
@@ -83,9 +130,14 @@ function filterByCategory(key) {
   document.querySelectorAll(".works-card").forEach((card) => {
     const match = key === "all" || card.dataset.category === key;
     card.classList.toggle("is-hidden", !match);
+    if (!match) {
+      const iframe = card.querySelector(".thumb-iframe");
+      if (iframe) iframe.src = "";
+    }
   });
 }
 
+// ---- モーダル ----
 function buildModal() {
   if (document.getElementById("preview-modal")) return;
   const modal = document.createElement("div");
@@ -125,6 +177,7 @@ function closeModal() {
   }, 300);
 }
 
+// ---- ユーティリティ ----
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
