@@ -1,53 +1,588 @@
 [
-  { "title": "Glow Pulse", "subtitle": "発光ロゴが静かに立ち上がる 1.2秒導入", "tags": ["Minimal", "Brand Intro", "HTML", "React"], "difficulty": "Beginner", "preview": "pulse", "category": "minimal" },
-  { "title": "Moon Gate", "subtitle": "和風の光粒子で始まる幻想系オープニング", "tags": ["Japanese", "Portfolio", "HTML"], "difficulty": "Intermediate", "preview": "bloom", "category": "japanese" },
-  { "title": "Signal Rise", "subtitle": "SF系のライン走査とロゴ定着演出", "tags": ["Sci-Fi", "App Launch", "HTML", "Expo"], "difficulty": "Intermediate", "preview": "bars", "category": "game" },
-  { "title": "Soft Bloom", "subtitle": "やさしいボケ感で始まる可愛い系導入", "tags": ["Cute", "Loading", "HTML", "Flutter"], "difficulty": "Beginner", "preview": "bloom", "category": "minimal" },
-  { "title": "Glass Entry", "subtitle": "ガラスUIとライトスイープの高級感演出", "tags": ["Luxury", "Landing Page", "React"], "difficulty": "Advanced", "preview": "sweep", "category": "minimal" },
-  { "title": "Start Orbit", "subtitle": "ゲーム開始向けの円軌道スプライト演出", "tags": ["Game", "Start", "HTML", "Android"], "difficulty": "Intermediate", "preview": "orbit", "category": "game" },
-  { "title": "Velvet Shine", "subtitle": "金属光沢が横切る高級ブランド向け導入", "tags": ["Luxury", "Brand Intro", "HTML", "React"], "difficulty": "Intermediate", "preview": "sweep", "category": "minimal" },
-  { "title": "Neon Drift", "subtitle": "青紫ネオンが流れる近未来ローディング演出", "tags": ["Sci-Fi", "Loading", "HTML", "Expo"], "difficulty": "Intermediate", "preview": "bars", "category": "game" },
-  { "title": "Paper Lantern", "subtitle": "柔らかな灯りがにじむ和モダンな立ち上がり", "tags": ["Japanese", "App Launch", "HTML"], "difficulty": "Beginner", "preview": "pulse", "category": "japanese" },
-  { "title": "Candy Pop", "subtitle": "弾む粒子とポップな色感で始まる可愛い導入", "tags": ["Pop", "Portfolio", "HTML", "Flutter"], "difficulty": "Beginner", "preview": "orbit", "category": "minimal" },
-  { "title": "Aurora Drift", "subtitle": "青緑オーロラが揺れる幻想的なApp導入", "tags": ["Minimal", "App Launch", "HTML", "React"], "difficulty": "Beginner", "preview": "pulse", "category": "minimal" },
-  { "title": "Crimson Rise", "subtitle": "赤い炎のパルスが立ち上がるゲーム系導入", "tags": ["Game", "Start", "HTML", "Android"], "difficulty": "Beginner", "preview": "pulse", "category": "game" },
-  { "title": "Void Bloom", "subtitle": "深宇宙から光が広がるSF系ブルーム演出", "tags": ["Sci-Fi", "App Launch", "HTML", "Expo"], "difficulty": "Intermediate", "preview": "bloom", "category": "game" },
-  { "title": "Sakura Fall", "subtitle": "花びらが舞い散る和風ポートフォリオ導入", "tags": ["Japanese", "Portfolio", "HTML"], "difficulty": "Intermediate", "preview": "bloom", "category": "japanese" },
-  { "title": "Gold Sweep", "subtitle": "金箔スイープが走る高級ブランド演出", "tags": ["Luxury", "Brand Intro", "HTML", "React"], "difficulty": "Intermediate", "preview": "sweep", "category": "minimal" },
-  { "title": "Ice Sweep", "subtitle": "氷の結晶がスライドするクールな導入", "tags": ["Minimal", "Landing Page", "HTML", "Flutter"], "difficulty": "Intermediate", "preview": "sweep", "category": "minimal" },
-  { "title": "Plasma Bars", "subtitle": "紫プラズマのバーが走るSF系ローディング", "tags": ["Sci-Fi", "Loading", "HTML", "Expo"], "difficulty": "Intermediate", "preview": "bars", "category": "game" },
-  { "title": "Sunset Bars", "subtitle": "オレンジ夕焼けグラデーションのバー演出", "tags": ["Pop", "App Launch", "HTML", "Flutter"], "difficulty": "Beginner", "preview": "bars", "category": "minimal" },
-  { "title": "Neon Orbit", "subtitle": "ネオンカラーの粒子が軌道を描くゲーム演出", "tags": ["Game", "Start", "HTML", "Android"], "difficulty": "Intermediate", "preview": "orbit", "category": "game" },
-  { "title": "Pastel Orbit", "subtitle": "やわらかパステルの軌道が回る可愛い導入", "tags": ["Cute", "Loading", "HTML", "Flutter"], "difficulty": "Beginner", "preview": "orbit", "category": "minimal" },
-  { "title": "Ember Pulse", "subtitle": "燃えかすの粒子がゆらめく和ダーク系演出", "tags": ["Japanese", "Brand Intro", "HTML"], "difficulty": "Intermediate", "preview": "pulse", "category": "japanese" },
-  { "title": "Frost Bloom", "subtitle": "白銀の結晶が広がるクリスタル系ブルーム", "tags": ["Minimal", "Landing Page", "HTML", "React"], "difficulty": "Intermediate", "preview": "bloom", "category": "minimal" },
-  { "title": "Toxic Bars", "subtitle": "毒々しい黄緑のバーが走るサイバー演出", "tags": ["Sci-Fi", "Game", "HTML", "Android"], "difficulty": "Intermediate", "preview": "bars", "category": "wild" },
-  { "title": "Rose Sweep", "subtitle": "ピンクのスイープが走るガーリー高級演出", "tags": ["Cute", "Brand Intro", "HTML", "React"], "difficulty": "Beginner", "preview": "sweep", "category": "minimal" },
-  { "title": "Thunder Orbit", "subtitle": "雷エフェクトの軌道が走るゲーム系導入", "tags": ["Game", "Start", "HTML", "Expo"], "difficulty": "Advanced", "preview": "orbit", "category": "game" },
-  { "title": "Indigo Pulse", "subtitle": "深いインディゴの静かなパルス導入", "tags": ["Minimal", "Portfolio", "HTML", "React"], "difficulty": "Beginner", "preview": "pulse", "category": "minimal" },
-  { "title": "Lava Bloom", "subtitle": "マグマのようなオレンジブルームが広がる演出", "tags": ["Game", "App Launch", "HTML", "Android"], "difficulty": "Intermediate", "preview": "bloom", "category": "game" },
-  { "title": "Chrome Sweep", "subtitle": "クロームメッキ光沢のスイープ高級演出", "tags": ["Luxury", "Landing Page", "HTML", "React"], "difficulty": "Advanced", "preview": "sweep", "category": "minimal" },
-  { "title": "Mint Bars", "subtitle": "ミントグリーンのバーが積み上がる爽快演出", "tags": ["Cute", "App Launch", "HTML", "Flutter"], "difficulty": "Beginner", "preview": "bars", "category": "minimal" },
-  { "title": "Shadow Orbit", "subtitle": "漆黒の空間に浮かぶ影の軌道演出", "tags": ["Minimal", "Brand Intro", "HTML", "React"], "difficulty": "Intermediate", "preview": "orbit", "category": "minimal" },
-  { "title": "Glitch Surreal", "subtitle": "グリッチノイズと歪む格子の超現実演出", "tags": ["Wild", "Game", "HTML"], "difficulty": "Advanced", "preview": "glitch", "category": "wild" },
-  { "title": "Acid Melt", "subtitle": "色が溶けて混ざり合うサイケデリック導入", "tags": ["Wild", "Portfolio", "HTML"], "difficulty": "Advanced", "preview": "psychedelic", "category": "wild" },
-  { "title": "Prism Warp", "subtitle": "プリズムが歪んで色が爆発するサイケ演出", "tags": ["Wild", "Brand Intro", "HTML"], "difficulty": "Advanced", "preview": "psychedelic", "category": "wild" },
-  { "title": "Dream Dissolve", "subtitle": "夢のように色が滲んで溶けていく導入", "tags": ["Wild", "Portfolio", "HTML"], "difficulty": "Intermediate", "preview": "psychedelic", "category": "wild" },
-  { "title": "Fluid Souls", "subtitle": "液体のように色が混ざり流れるオープニング", "tags": ["Wild", "App Launch", "HTML"], "difficulty": "Advanced", "preview": "psychedelic", "category": "wild" },
-  { "title": "Blood Moon", "subtitle": "赤い霧がじわじわ滲むホラー系導入", "tags": ["Wild", "Game", "HTML"], "difficulty": "Intermediate", "preview": "horror", "category": "wild" },
-  { "title": "Void Whisper", "subtitle": "暗闇から何かが浮かぶ不気味な演出", "tags": ["Wild", "Game", "HTML"], "difficulty": "Advanced", "preview": "horror", "category": "wild" },
-  { "title": "Rot Bloom", "subtitle": "腐食するような有機的なダーク演出", "tags": ["Wild", "Portfolio", "HTML"], "difficulty": "Advanced", "preview": "horror", "category": "wild" },
-  { "title": "Static Ghost", "subtitle": "砂嵐ノイズから幽霊が現れるホラー演出", "tags": ["Wild", "Game", "HTML"], "difficulty": "Advanced", "preview": "horror", "category": "wild" },
-  { "title": "Pixel Crash", "subtitle": "ドット絵がクラッシュして崩壊するレトロ演出", "tags": ["Wild", "Game", "HTML"], "difficulty": "Intermediate", "preview": "pixel", "category": "wild" },
-  { "title": "8Bit Glitch", "subtitle": "8bitゲームが壊れていくレトログリッチ", "tags": ["Wild", "Game", "HTML"], "difficulty": "Intermediate", "preview": "pixel", "category": "wild" },
-  { "title": "Mosaic Break", "subtitle": "モザイクタイルが砕けて散るピクセル演出", "tags": ["Wild", "App Launch", "HTML"], "difficulty": "Advanced", "preview": "pixel", "category": "wild" },
-  { "title": "Matrix Rain", "subtitle": "文字が降り注ぐマトリックス風ドット演出", "tags": ["Wild", "Sci-Fi", "HTML"], "difficulty": "Intermediate", "preview": "pixel", "category": "wild" },
-  { "title": "Type Explosion", "subtitle": "文字が四方八方に爆発するタイポ演出", "tags": ["Wild", "Brand Intro", "HTML"], "difficulty": "Advanced", "preview": "typo", "category": "wild" },
-  { "title": "Word Collapse", "subtitle": "文字が崩れ落ちて再構成されるタイポ導入", "tags": ["Wild", "Portfolio", "HTML"], "difficulty": "Advanced", "preview": "typo", "category": "wild" },
-  { "title": "Glitch Text", "subtitle": "文字がグリッチして震えながら現れる演出", "tags": ["Wild", "Game", "HTML"], "difficulty": "Intermediate", "preview": "typo", "category": "wild" },
-  { "title": "Letter Storm", "subtitle": "文字の嵐が渦巻いて収束するカオス演出", "tags": ["Wild", "Brand Intro", "HTML"], "difficulty": "Advanced", "preview": "typo", "category": "wild" },
-  { "title": "Neon Bleed", "subtitle": "ネオンカラーが滲んで爆発するグリッチ系", "tags": ["Wild", "Game", "HTML"], "difficulty": "Advanced", "preview": "glitch", "category": "wild" },
-  { "title": "Data Corrupt", "subtitle": "データが壊れていく演出でゲーム系に最適", "tags": ["Wild", "Sci-Fi", "HTML"], "difficulty": "Advanced", "preview": "glitch", "category": "wild" },
-  { "title": "Signal Lost", "subtitle": "電波が途切れて再接続される不穏な演出", "tags": ["Wild", "Sci-Fi", "HTML"], "difficulty": "Intermediate", "preview": "glitch", "category": "wild" },
-  { "title": "Reality Tear", "subtitle": "現実が引き裂かれるような超現実的演出", "tags": ["Wild", "Portfolio", "HTML"], "difficulty": "Advanced", "preview": "glitch", "category": "wild" }
+  {
+    "title": "Glow Pulse",
+    "subtitle": "発光ロゴが静かに立ち上がる 1.2秒導入",
+    "tags": [
+      "Minimal",
+      "Brand Intro",
+      "HTML",
+      "React"
+    ],
+    "difficulty": "Beginner",
+    "category": "minimal"
+  },
+  {
+    "title": "Moon Gate",
+    "subtitle": "和風の光粒子で始まる幻想系オープニング",
+    "tags": [
+      "Japanese",
+      "Portfolio",
+      "HTML"
+    ],
+    "difficulty": "Intermediate",
+    "category": "japanese"
+  },
+  {
+    "title": "Signal Rise",
+    "subtitle": "SF系のライン走査とロゴ定着演出",
+    "tags": [
+      "Sci-Fi",
+      "App Launch",
+      "HTML",
+      "Expo"
+    ],
+    "difficulty": "Intermediate",
+    "category": "game"
+  },
+  {
+    "title": "Soft Bloom",
+    "subtitle": "やさしいボケ感で始まる可愛い系導入",
+    "tags": [
+      "Cute",
+      "Loading",
+      "HTML",
+      "Flutter"
+    ],
+    "difficulty": "Beginner",
+    "category": "minimal"
+  },
+  {
+    "title": "Glass Entry",
+    "subtitle": "ガラスUIとライトスイープの高級感演出",
+    "tags": [
+      "Luxury",
+      "Landing Page",
+      "React"
+    ],
+    "difficulty": "Advanced",
+    "category": "minimal"
+  },
+  {
+    "title": "Start Orbit",
+    "subtitle": "ゲーム開始向けの円軌道スプライト演出",
+    "tags": [
+      "Game",
+      "Start",
+      "HTML",
+      "Android"
+    ],
+    "difficulty": "Intermediate",
+    "category": "game"
+  },
+  {
+    "title": "Velvet Shine",
+    "subtitle": "金属光沢が横切る高級ブランド向け導入",
+    "tags": [
+      "Luxury",
+      "Brand Intro",
+      "HTML",
+      "React"
+    ],
+    "difficulty": "Intermediate",
+    "category": "minimal"
+  },
+  {
+    "title": "Neon Drift",
+    "subtitle": "青紫ネオンが流れる近未来ローディング演出",
+    "tags": [
+      "Sci-Fi",
+      "Loading",
+      "HTML",
+      "Expo"
+    ],
+    "difficulty": "Intermediate",
+    "category": "game"
+  },
+  {
+    "title": "Paper Lantern",
+    "subtitle": "柔らかな灯りがにじむ和モダンな立ち上がり",
+    "tags": [
+      "Japanese",
+      "App Launch",
+      "HTML"
+    ],
+    "difficulty": "Beginner",
+    "category": "japanese"
+  },
+  {
+    "title": "Candy Pop",
+    "subtitle": "弾む粒子とポップな色感で始まる可愛い導入",
+    "tags": [
+      "Pop",
+      "Portfolio",
+      "HTML",
+      "Flutter"
+    ],
+    "difficulty": "Beginner",
+    "category": "minimal"
+  },
+  {
+    "title": "Aurora Drift",
+    "subtitle": "青緑オーロラが揺れる幻想的なApp導入",
+    "tags": [
+      "Minimal",
+      "App Launch",
+      "HTML",
+      "React"
+    ],
+    "difficulty": "Beginner",
+    "category": "minimal"
+  },
+  {
+    "title": "Crimson Rise",
+    "subtitle": "赤い炎のパルスが立ち上がるゲーム系導入",
+    "tags": [
+      "Game",
+      "Start",
+      "HTML",
+      "Android"
+    ],
+    "difficulty": "Beginner",
+    "category": "game"
+  },
+  {
+    "title": "Void Bloom",
+    "subtitle": "深宇宙から光が広がるSF系ブルーム演出",
+    "tags": [
+      "Sci-Fi",
+      "App Launch",
+      "HTML",
+      "Expo"
+    ],
+    "difficulty": "Intermediate",
+    "category": "game"
+  },
+  {
+    "title": "Sakura Fall",
+    "subtitle": "花びらが舞い散る和風ポートフォリオ導入",
+    "tags": [
+      "Japanese",
+      "Portfolio",
+      "HTML"
+    ],
+    "difficulty": "Intermediate",
+    "category": "japanese"
+  },
+  {
+    "title": "Gold Sweep",
+    "subtitle": "金箔スイープが走る高級ブランド演出",
+    "tags": [
+      "Luxury",
+      "Brand Intro",
+      "HTML",
+      "React"
+    ],
+    "difficulty": "Intermediate",
+    "category": "minimal"
+  },
+  {
+    "title": "Ice Sweep",
+    "subtitle": "氷の結晶がスライドするクールな導入",
+    "tags": [
+      "Minimal",
+      "Landing Page",
+      "HTML",
+      "Flutter"
+    ],
+    "difficulty": "Intermediate",
+    "category": "minimal"
+  },
+  {
+    "title": "Plasma Bars",
+    "subtitle": "紫プラズマのバーが走るSF系ローディング",
+    "tags": [
+      "Sci-Fi",
+      "Loading",
+      "HTML",
+      "Expo"
+    ],
+    "difficulty": "Intermediate",
+    "category": "game"
+  },
+  {
+    "title": "Sunset Bars",
+    "subtitle": "オレンジ夕焼けグラデーションのバー演出",
+    "tags": [
+      "Pop",
+      "App Launch",
+      "HTML",
+      "Flutter"
+    ],
+    "difficulty": "Beginner",
+    "category": "minimal"
+  },
+  {
+    "title": "Neon Orbit",
+    "subtitle": "ネオンカラーの粒子が軌道を描くゲーム演出",
+    "tags": [
+      "Game",
+      "Start",
+      "HTML",
+      "Android"
+    ],
+    "difficulty": "Intermediate",
+    "category": "game"
+  },
+  {
+    "title": "Pastel Orbit",
+    "subtitle": "やわらかパステルの軌道が回る可愛い導入",
+    "tags": [
+      "Cute",
+      "Loading",
+      "HTML",
+      "Flutter"
+    ],
+    "difficulty": "Beginner",
+    "category": "minimal"
+  },
+  {
+    "title": "Ember Pulse",
+    "subtitle": "燃えかすの粒子がゆらめく和ダーク系演出",
+    "tags": [
+      "Japanese",
+      "Brand Intro",
+      "HTML"
+    ],
+    "difficulty": "Intermediate",
+    "category": "japanese"
+  },
+  {
+    "title": "Frost Bloom",
+    "subtitle": "白銀の結晶が広がるクリスタル系ブルーム",
+    "tags": [
+      "Minimal",
+      "Landing Page",
+      "HTML",
+      "React"
+    ],
+    "difficulty": "Intermediate",
+    "category": "minimal"
+  },
+  {
+    "title": "Toxic Bars",
+    "subtitle": "毒々しい黄緑のバーが走るサイバー演出",
+    "tags": [
+      "Sci-Fi",
+      "Game",
+      "HTML",
+      "Android"
+    ],
+    "difficulty": "Intermediate",
+    "category": "wild"
+  },
+  {
+    "title": "Rose Sweep",
+    "subtitle": "ピンクのスイープが走るガーリー高級演出",
+    "tags": [
+      "Cute",
+      "Brand Intro",
+      "HTML",
+      "React"
+    ],
+    "difficulty": "Beginner",
+    "category": "minimal"
+  },
+  {
+    "title": "Thunder Orbit",
+    "subtitle": "雷エフェクトの軌道が走るゲーム系導入",
+    "tags": [
+      "Game",
+      "Start",
+      "HTML",
+      "Expo"
+    ],
+    "difficulty": "Advanced",
+    "category": "game"
+  },
+  {
+    "title": "Indigo Pulse",
+    "subtitle": "深いインディゴの静かなパルス導入",
+    "tags": [
+      "Minimal",
+      "Portfolio",
+      "HTML",
+      "React"
+    ],
+    "difficulty": "Beginner",
+    "category": "minimal"
+  },
+  {
+    "title": "Lava Bloom",
+    "subtitle": "マグマのようなオレンジブルームが広がる演出",
+    "tags": [
+      "Game",
+      "App Launch",
+      "HTML",
+      "Android"
+    ],
+    "difficulty": "Intermediate",
+    "category": "game"
+  },
+  {
+    "title": "Chrome Sweep",
+    "subtitle": "クロームメッキ光沢のスイープ高級演出",
+    "tags": [
+      "Luxury",
+      "Landing Page",
+      "HTML",
+      "React"
+    ],
+    "difficulty": "Advanced",
+    "category": "minimal"
+  },
+  {
+    "title": "Mint Bars",
+    "subtitle": "ミントグリーンのバーが積み上がる爽快演出",
+    "tags": [
+      "Cute",
+      "App Launch",
+      "HTML",
+      "Flutter"
+    ],
+    "difficulty": "Beginner",
+    "category": "minimal"
+  },
+  {
+    "title": "Shadow Orbit",
+    "subtitle": "漆黒の空間に浮かぶ影の軌道演出",
+    "tags": [
+      "Minimal",
+      "Brand Intro",
+      "HTML",
+      "React"
+    ],
+    "difficulty": "Intermediate",
+    "category": "minimal"
+  },
+  {
+    "title": "Glitch Surreal",
+    "subtitle": "グリッチノイズと歪む格子の超現実演出",
+    "tags": [
+      "Wild",
+      "Game",
+      "HTML"
+    ],
+    "difficulty": "Advanced",
+    "category": "wild"
+  },
+  {
+    "title": "Acid Melt",
+    "subtitle": "色が溶けて混ざり合うサイケデリック導入",
+    "tags": [
+      "Wild",
+      "Portfolio",
+      "HTML"
+    ],
+    "difficulty": "Advanced",
+    "category": "wild"
+  },
+  {
+    "title": "Prism Warp",
+    "subtitle": "プリズムが歪んで色が爆発するサイケ演出",
+    "tags": [
+      "Wild",
+      "Brand Intro",
+      "HTML"
+    ],
+    "difficulty": "Advanced",
+    "category": "wild"
+  },
+  {
+    "title": "Dream Dissolve",
+    "subtitle": "夢のように色が滲んで溶けていく導入",
+    "tags": [
+      "Wild",
+      "Portfolio",
+      "HTML"
+    ],
+    "difficulty": "Intermediate",
+    "category": "wild"
+  },
+  {
+    "title": "Fluid Souls",
+    "subtitle": "液体のように色が混ざり流れるオープニング",
+    "tags": [
+      "Wild",
+      "App Launch",
+      "HTML"
+    ],
+    "difficulty": "Advanced",
+    "category": "wild"
+  },
+  {
+    "title": "Blood Moon",
+    "subtitle": "赤い霧がじわじわ滲むホラー系導入",
+    "tags": [
+      "Wild",
+      "Game",
+      "HTML"
+    ],
+    "difficulty": "Intermediate",
+    "category": "wild"
+  },
+  {
+    "title": "Void Whisper",
+    "subtitle": "暗闇から何かが浮かぶ不気味な演出",
+    "tags": [
+      "Wild",
+      "Game",
+      "HTML"
+    ],
+    "difficulty": "Advanced",
+    "category": "wild"
+  },
+  {
+    "title": "Rot Bloom",
+    "subtitle": "腐食するような有機的なダーク演出",
+    "tags": [
+      "Wild",
+      "Portfolio",
+      "HTML"
+    ],
+    "difficulty": "Advanced",
+    "category": "wild"
+  },
+  {
+    "title": "Static Ghost",
+    "subtitle": "砂嵐ノイズから幽霊が現れるホラー演出",
+    "tags": [
+      "Wild",
+      "Game",
+      "HTML"
+    ],
+    "difficulty": "Advanced",
+    "category": "wild"
+  },
+  {
+    "title": "Pixel Crash",
+    "subtitle": "ドット絵がクラッシュして崩壊するレトロ演出",
+    "tags": [
+      "Wild",
+      "Game",
+      "HTML"
+    ],
+    "difficulty": "Intermediate",
+    "category": "wild"
+  },
+  {
+    "title": "8Bit Glitch",
+    "subtitle": "8bitゲームが壊れていくレトログリッチ",
+    "tags": [
+      "Wild",
+      "Game",
+      "HTML"
+    ],
+    "difficulty": "Intermediate",
+    "category": "wild"
+  },
+  {
+    "title": "Mosaic Break",
+    "subtitle": "モザイクタイルが砕けて散るピクセル演出",
+    "tags": [
+      "Wild",
+      "App Launch",
+      "HTML"
+    ],
+    "difficulty": "Advanced",
+    "category": "wild"
+  },
+  {
+    "title": "Matrix Rain",
+    "subtitle": "文字が降り注ぐマトリックス風ドット演出",
+    "tags": [
+      "Wild",
+      "Sci-Fi",
+      "HTML"
+    ],
+    "difficulty": "Intermediate",
+    "category": "wild"
+  },
+  {
+    "title": "Type Explosion",
+    "subtitle": "文字が四方八方に爆発するタイポ演出",
+    "tags": [
+      "Wild",
+      "Brand Intro",
+      "HTML"
+    ],
+    "difficulty": "Advanced",
+    "category": "wild"
+  },
+  {
+    "title": "Word Collapse",
+    "subtitle": "文字が崩れ落ちて再構成されるタイポ導入",
+    "tags": [
+      "Wild",
+      "Portfolio",
+      "HTML"
+    ],
+    "difficulty": "Advanced",
+    "category": "wild"
+  },
+  {
+    "title": "Glitch Text",
+    "subtitle": "文字がグリッチして震えながら現れる演出",
+    "tags": [
+      "Wild",
+      "Game",
+      "HTML"
+    ],
+    "difficulty": "Intermediate",
+    "category": "wild"
+  },
+  {
+    "title": "Letter Storm",
+    "subtitle": "文字の嵐が渦巻いて収束するカオス演出",
+    "tags": [
+      "Wild",
+      "Brand Intro",
+      "HTML"
+    ],
+    "difficulty": "Advanced",
+    "category": "wild"
+  },
+  {
+    "title": "Neon Bleed",
+    "subtitle": "ネオンカラーが滲んで爆発するグリッチ系",
+    "tags": [
+      "Wild",
+      "Game",
+      "HTML"
+    ],
+    "difficulty": "Advanced",
+    "category": "wild"
+  },
+  {
+    "title": "Data Corrupt",
+    "subtitle": "データが壊れていく演出でゲーム系に最適",
+    "tags": [
+      "Wild",
+      "Sci-Fi",
+      "HTML"
+    ],
+    "difficulty": "Advanced",
+    "category": "wild"
+  },
+  {
+    "title": "Signal Lost",
+    "subtitle": "電波が途切れて再接続される不穏な演出",
+    "tags": [
+      "Wild",
+      "Sci-Fi",
+      "HTML"
+    ],
+    "difficulty": "Intermediate",
+    "category": "wild"
+  },
+  {
+    "title": "Reality Tear",
+    "subtitle": "現実が引き裂かれるような超現実的演出",
+    "tags": [
+      "Wild",
+      "Portfolio",
+      "HTML"
+    ],
+    "difficulty": "Advanced",
+    "category": "wild"
+  }
 ]
