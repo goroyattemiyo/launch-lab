@@ -863,3 +863,31 @@ button {
   .hero-h2 { animation: none; }
 }
 
+
+.usecase-term {
+  font-size: clamp(13px, 1.8vw, 18px);
+  margin: 6px 0 24px;
+  min-height: 1.6em;
+  letter-spacing: 0.06em;
+  border-left: 2px solid transparent;
+  padding-left: 10px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.usecase-term.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.term-ja {
+  margin-right: 12px;
+  font-weight: 600;
+}
+
+.term-en {
+  font-size: 0.85em;
+  opacity: 0.6;
+  font-style: italic;
+}

@@ -249,30 +249,47 @@ function initHeroCanvas() {
 // ---- Hero usecase loop ----
 function initUsecaseLoop() {
   const el = document.querySelector(".usecase-text");
-  if (!el) return;
+  const termEl = document.querySelector(".usecase-term");
+  if (!el || !termEl) return;
 
   const cases = [
-    { text: "App Launch に。",        color: "#22d3ee" },
-    { text: "Game Start に。",        color: "#a78bfa" },
-    { text: "Portfolio の冒頭に。",   color: "#f472b6" },
-    { text: "Web サイトの入口に。",   color: "#34d399" },
+    { text: "App Launch に。",       color: "#22d3ee", ja: "スプラッシュスクリーン", en: "Splash Screen" },
+    { text: "Game Start に。",       color: "#a78bfa", ja: "ゲームオープニング",     en: "Game Opening" },
+    { text: "Portfolio の冒頭に。",  color: "#f472b6", ja: "ヒーローアニメーション", en: "Hero Animation" },
+    { text: "Web サイトの入口に。",  color: "#34d399", ja: "ページイントロ",         en: "Page Intro" },
   ];
 
   let ci = 0, ti = 0, deleting = false;
-  const TYPE_SPEED = 60, DELETE_SPEED = 30, PAUSE = 1800;
+  const TYPE_SPEED = 60, DELETE_SPEED = 25, PAUSE = 2200, TERM_DELAY = 400;
+
+  function showTerm(color) {
+    const c = cases[ci];
+    termEl.innerHTML = `= <span class="term-ja">${c.ja}</span><span class="term-en">${c.en}</span>`;
+    termEl.style.color = color + "99";
+    termEl.style.borderColor = color + "44";
+    termEl.classList.add("is-visible");
+  }
+
+  function hideTerm() {
+    termEl.classList.remove("is-visible");
+    termEl.innerHTML = "";
+  }
 
   function tick() {
     const current = cases[ci];
     el.style.color = current.color;
     el.style.textShadow = `0 0 20px ${current.color}88`;
+
     if (!deleting) {
       el.textContent = current.text.slice(0, ++ti);
       if (ti === current.text.length) {
+        setTimeout(() => showTerm(current.color), TERM_DELAY);
         deleting = true;
         setTimeout(tick, PAUSE);
         return;
       }
     } else {
+      if (termEl.classList.contains("is-visible")) hideTerm();
       el.textContent = current.text.slice(0, --ti);
       if (ti === 0) {
         deleting = false;
@@ -284,14 +301,3 @@ function initUsecaseLoop() {
 
   setTimeout(tick, 1400);
 }
-
-
-
-
-document.addEventListener("DOMContentLoaded", () => {
-  loadWorks();
-  requestAnimationFrame(() => {
-    initHeroCanvas();
-    initUsecaseLoop();
-  });
-});
