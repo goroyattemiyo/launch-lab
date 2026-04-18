@@ -186,3 +186,46 @@ function escapeHtml(value) {
 }
 
 document.addEventListener("DOMContentLoaded", loadWorks);
+// ---- Hero usecase loop ----
+function initUsecaseLoop() {
+  const el = document.querySelector(".usecase-text");
+  if (!el) return;
+
+  const cases = [
+    "App Launch に。",
+    "Game Start に。",
+    "Portfolio の冒頭に。",
+    "Web サイトの入口に。",
+  ];
+
+  let ci = 0;
+  let ti = 0;
+  let deleting = false;
+  const TYPE_SPEED = 60;
+  const DELETE_SPEED = 30;
+  const PAUSE = 1800;
+
+  function tick() {
+    const current = cases[ci];
+    if (!deleting) {
+      el.textContent = current.slice(0, ++ti);
+      if (ti === current.length) {
+        deleting = true;
+        setTimeout(tick, PAUSE);
+        return;
+      }
+    } else {
+      el.textContent = current.slice(0, --ti);
+      if (ti === 0) {
+        deleting = false;
+        ci = (ci + 1) % cases.length;
+      }
+    }
+    setTimeout(tick, deleting ? DELETE_SPEED : TYPE_SPEED);
+  }
+
+  // アニメーション完了後に開始
+  setTimeout(tick, 1800);
+}
+
+document.addEventListener("DOMContentLoaded", initUsecaseLoop);
