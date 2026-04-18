@@ -584,7 +584,8 @@
     ],
     "difficulty": "Advanced",
     "category": "wild"
-  }
+  },
+  { "title": "AA Copy Tool Splash", "subtitle": "アスキーアートが画面を横切るサイバー系スプラッシュ演出", "tags": ["Wild", "App Launch", "HTML"], "difficulty": "Intermediate", "category": "wild" },
+  { "title": "Insight Master Snap", "subtitle": "白×ブルーのクリーンなSNS分析アプリのトップUI", "tags": ["Minimal", "App Launch", "HTML"], "difficulty": "Beginner", "category": "minimal" },
+  { "title": "S3 Splash", "subtitle": "ピンク×パープルのグラデーション背景にアイコンがスケールアップするスプラッシュ", "tags": ["App Launch", "Flutter", "HTML"], "difficulty": "Beginner", "category": "minimal" }
 ]
-
-
