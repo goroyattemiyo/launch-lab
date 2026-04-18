@@ -35,3 +35,13 @@
 
 ## 2026-04-17（追記4）
 - hero-gridを1カラム化しmax-width:760px + margin:0 autoで中央寄せに変更（Hero Preview Window非表示に伴う対応）
+
+## 2026-04-18
+- 色違いバリエーション作品は名前付きの独立作品として残す方針とした
+  - 理由：名前がついていることでそれぞれの個性・かっこよさがある
+  - カラー選択UI化は見送り
+- サイトをDiscography軸に刷新した
+  - コミュニティ・Discord導線をいったん非表示
+  - 問い合わせ窓口をThreads（@goro_yattemiyo_）に統一
+  - ヒーローをオーロラCanvas背景＋タイプライター演出に刷新
+  - Browse・Hero Preview Windowを非表示に
