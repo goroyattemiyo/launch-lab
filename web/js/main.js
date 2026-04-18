@@ -185,7 +185,7 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-document.addEventListener("DOMContentLoaded", loadWorks);
+
 
 
 // ---- Hero Canvas（オーロラ背景） ----
@@ -285,7 +285,13 @@ function initUsecaseLoop() {
   setTimeout(tick, 1400);
 }
 
+
+
+
 document.addEventListener("DOMContentLoaded", () => {
-  initHeroCanvas();
-  initUsecaseLoop();
+  loadWorks();
+  requestAnimationFrame(() => {
+    initHeroCanvas();
+    initUsecaseLoop();
+  });
 });
