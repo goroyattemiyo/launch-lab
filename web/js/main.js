@@ -250,58 +250,96 @@ function initHeroCanvas() {
 function initUsecaseLoop() {
   const el = document.querySelector(".usecase-text");
   const termEl = document.querySelector(".usecase-term");
-  if (!el || !termEl) return;
+  const extraEl = document.querySelector(".usecase-extra");
+  if (!el || !termEl || !extraEl) return;
 
   const cases = [
-    { text: "App Launch に。",       color: "#22d3ee", ja: "スプラッシュスクリーン", en: "Splash Screen" },
-    { text: "Game Start に。",       color: "#a78bfa", ja: "ゲームオープニング",     en: "Game Opening" },
-    { text: "Portfolio の冒頭に。",  color: "#f472b6", ja: "ヒーローアニメーション", en: "Hero Animation" },
-    { text: "Web サイトの入口に。",  color: "#34d399", ja: "ページイントロ",         en: "Page Intro" },
+    { text: "App Launch に。",      color: "#22d3ee", ja: "スプラッシュスクリーン", en: "Splash Screen" },
+    { text: "Game Start に。",      color: "#a78bfa", ja: "ゲームオープニング",     en: "Game Opening" },
+    { text: "Portfolio の冒頭に。", color: "#f472b6", ja: "ヒーローアニメーション", en: "Hero Animation" },
+    { text: "Web サイトの入口に。", color: "#34d399", ja: "ページイントロ",         en: "Page Intro" },
   ];
 
-  let ci = 0, ti = 0, deleting = false;
-  const TYPE_SPEED = 60, DELETE_SPEED = 25, PAUSE = 2200, TERM_DELAY = 400;
+  const epilogue = [
+    { text: "公開プレビュー 50+。",        color: "#ffffff" },
+    { text: "見る → 試す → 手に入れる。", color: "#ffffff" },
+  ];
 
-  function showTerm(color) {
-    const c = cases[ci];
-    termEl.innerHTML = `= <span class="term-ja">${c.ja}</span><span class="term-en">${c.en}</span>`;
-    termEl.style.color = color + "99";
-    termEl.style.borderColor = color + "44";
-    termEl.classList.add("is-visible");
-  }
+  const TYPE_SPEED = 60, DELETE_SPEED = 25, PAUSE = 1800, TERM_DELAY = 400, EPILOGUE_PAUSE = 2400;
 
-  function hideTerm() {
-    termEl.classList.remove("is-visible");
-    termEl.innerHTML = "";
-  }
-
-  function tick() {
-    const current = cases[ci];
-    el.style.color = current.color;
-    el.style.textShadow = `0 0 20px ${current.color}88`;
-
-    if (!deleting) {
-      el.textContent = current.text.slice(0, ++ti);
-      if (ti === current.text.length) {
-        setTimeout(() => showTerm(current.color), TERM_DELAY);
-        deleting = true;
-        setTimeout(tick, PAUSE);
-        return;
-      }
-    } else {
-      if (termEl.classList.contains("is-visible")) hideTerm();
-      el.textContent = current.text.slice(0, --ti);
-      if (ti === 0) {
-        deleting = false;
-        ci = (ci + 1) % cases.length;
-      }
+  function typeText(target, text, color, speed, cb) {
+    target.style.color = color;
+    target.style.textShadow = `0 0 20px ${color}66`;
+    let i = 0;
+    function t() {
+      target.textContent = text.slice(0, ++i);
+      if (i < text.length) setTimeout(t, speed);
+      else if (cb) cb();
     }
-    setTimeout(tick, deleting ? DELETE_SPEED : TYPE_SPEED);
+    t();
   }
 
-  setTimeout(tick, 1400);
-}
+  function deleteText(target, cb) {
+    let len = target.textContent.length;
+    function t() {
+      target.textContent = target.textContent.slice(0, --len);
+      if (len > 0) setTimeout(t, DELETE_SPEED);
+      else if (cb) cb();
+    }
+    t();
+  }
 
+  function showTerm(c, cb) {
+    termEl.innerHTML = `= <span class="term-ja">${c.ja}</span><span class="term-en">${c.en}</span>`;
+    termEl.style.color = c.color + "99";
+    termEl.style.borderColor = c.color + "44";
+    termEl.classList.add("is-visible");
+    setTimeout(cb, PAUSE);
+  }
+
+  function hideTerm(cb) {
+    termEl.classList.remove("is-visible");
+    setTimeout(() => { termEl.innerHTML = ""; cb(); }, 400);
+  }
+
+  function runCase(ci, cb) {
+    const c = cases[ci];
+    el.style.color = c.color;
+    typeText(el, c.text, c.color, TYPE_SPEED, () => {
+      setTimeout(() => {
+        showTerm(c, () => {
+          hideTerm(() => {
+            deleteText(el, cb);
+          });
+        });
+      }, TERM_DELAY);
+    });
+  }
+
+  function runEpilogue(cb) {
+    typeText(el, epilogue[0].text, epilogue[0].color, TYPE_SPEED, () => {
+      setTimeout(() => {
+        typeText(extraEl, epilogue[1].text, epilogue[1].color, TYPE_SPEED, () => {
+          setTimeout(() => {
+            deleteText(extraEl, () => {
+              deleteText(el, cb);
+            });
+          }, EPILOGUE_PAUSE);
+        });
+      }, 600);
+    });
+  }
+
+  function loop(ci) {
+    if (ci < cases.length) {
+      runCase(ci, () => loop(ci + 1));
+    } else {
+      runEpilogue(() => loop(0));
+    }
+  }
+
+  setTimeout(() => loop(0), 1400);
+}
 document.addEventListener("DOMContentLoaded", () => {
   loadWorks();
   requestAnimationFrame(() => {
@@ -309,3 +347,4 @@ document.addEventListener("DOMContentLoaded", () => {
     initUsecaseLoop();
   });
 });
+
