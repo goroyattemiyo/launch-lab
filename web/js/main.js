@@ -186,36 +186,94 @@ function escapeHtml(value) {
 }
 
 document.addEventListener("DOMContentLoaded", loadWorks);
+
+
+// ---- Hero Canvas（オーロラ背景） ----
+function initHeroCanvas() {
+  const canvas = document.getElementById("hero-canvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+
+  function resize() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+  resize();
+  window.addEventListener("resize", resize);
+
+  const orbs = [
+    { x: 0.2, y: 0.3, r: 0.45, h: 260, speed: 0.0004 },
+    { x: 0.7, y: 0.6, r: 0.40, h: 200, speed: 0.0003 },
+    { x: 0.5, y: 0.8, r: 0.35, h: 310, speed: 0.0005 },
+    { x: 0.85, y: 0.2, r: 0.30, h: 170, speed: 0.0004 },
+  ];
+
+  let t = 0;
+
+  function draw() {
+    const W = canvas.width;
+    const H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = "#09090b";
+    ctx.fillRect(0, 0, W, H);
+
+    orbs.forEach((orb, i) => {
+      const x = (orb.x + Math.sin(t * orb.speed * 1000 + i) * 0.12) * W;
+      const y = (orb.y + Math.cos(t * orb.speed * 800 + i) * 0.10) * H;
+      const r = orb.r * Math.min(W, H);
+      const hue = (orb.h + t * 0.015) % 360;
+
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+      grad.addColorStop(0, `hsla(${hue}, 80%, 65%, 0.18)`);
+      grad.addColorStop(0.5, `hsla(${hue + 30}, 70%, 55%, 0.08)`);
+      grad.addColorStop(1, `hsla(${hue + 60}, 60%, 45%, 0)`);
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // 薄いスキャンライン
+    ctx.fillStyle = "rgba(0,0,0,0.06)";
+    for (let y = 0; y < H; y += 4) {
+      ctx.fillRect(0, y, W, 1);
+    }
+
+    t += 16;
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
 // ---- Hero usecase loop ----
 function initUsecaseLoop() {
   const el = document.querySelector(".usecase-text");
   if (!el) return;
 
   const cases = [
-    "App Launch に。",
-    "Game Start に。",
-    "Portfolio の冒頭に。",
-    "Web サイトの入口に。",
+    { text: "App Launch に。",        color: "#22d3ee" },
+    { text: "Game Start に。",        color: "#a78bfa" },
+    { text: "Portfolio の冒頭に。",   color: "#f472b6" },
+    { text: "Web サイトの入口に。",   color: "#34d399" },
   ];
 
-  let ci = 0;
-  let ti = 0;
-  let deleting = false;
-  const TYPE_SPEED = 60;
-  const DELETE_SPEED = 30;
-  const PAUSE = 1800;
+  let ci = 0, ti = 0, deleting = false;
+  const TYPE_SPEED = 60, DELETE_SPEED = 30, PAUSE = 1800;
 
   function tick() {
     const current = cases[ci];
+    el.style.color = current.color;
+    el.style.textShadow = `0 0 20px ${current.color}88`;
     if (!deleting) {
-      el.textContent = current.slice(0, ++ti);
-      if (ti === current.length) {
+      el.textContent = current.text.slice(0, ++ti);
+      if (ti === current.text.length) {
         deleting = true;
         setTimeout(tick, PAUSE);
         return;
       }
     } else {
-      el.textContent = current.slice(0, --ti);
+      el.textContent = current.text.slice(0, --ti);
       if (ti === 0) {
         deleting = false;
         ci = (ci + 1) % cases.length;
@@ -224,8 +282,10 @@ function initUsecaseLoop() {
     setTimeout(tick, deleting ? DELETE_SPEED : TYPE_SPEED);
   }
 
-  // アニメーション完了後に開始
-  setTimeout(tick, 1800);
+  setTimeout(tick, 1400);
 }
 
-document.addEventListener("DOMContentLoaded", initUsecaseLoop);
+document.addEventListener("DOMContentLoaded", () => {
+  initHeroCanvas();
+  initUsecaseLoop();
+});
