@@ -15,33 +15,14 @@
 - works.jsonにcategoryフィールドを追加してタブフィルタリングに対応した
 - index.htmlの公開プレビュー表記を「10+」から「50+」に更新した
 
-## 2026-04-17（追記）
-- Browseピルの連動方針：方針A（ピルクリック→worksタブ切替+スクロール）を採用した
-  - 理由：初心者導線を壊さない・実装コスト最小・将来の方針B移行を妨げない
-  - 用途/技術/秒数ピルは現時点でworksに対応タブがないため、クリックするとall表示+#worksスクロールとした
-- カテゴリタブ並びを「すべて・きれいめ・和風・ゲームSF・奇抜系」に変更（奇抜系を末尾へ、ブランド第一印象を優先）
-- 「すべての作品を見る」リンクを href="#" から href="#works" に修正
-- Developers×3・Request×2 の #リンクに Coming Soon ツールチップを実装（CSS only）
-
-## 2026-04-17（追記2）
-- BrowseセクションをHTML側でdisplay:noneに変更（worksタブで完結するため不要と判断）
-- Hero Preview Windowをdisplay:noneに変更（直下にWorksがあるため静的演出は不要と判断）
-- works.jsonのpreviewフィールドを削除（titleToKey()方式に統一済みで完全に未使用のため）
-- Glitch SurrealのcanvasをW=800固定からwindow.innerWidth基準に修正（サムネイル右切れ対応）
-
-## 2026-04-17（追記3）
-- AIからの作業指示はスクリプトファイルではなく、PowerShell／Bash どちらでも流せるコマンドテキストで渡す方針とする
-- 理由：スクリプトファイルは実行ポリシーや保存場所の手間がかかるため
-
-## 2026-04-17（追記4）
-- hero-gridを1カラム化しmax-width:760px + margin:0 autoで中央寄せに変更（Hero Preview Window非表示に伴う対応）
-
 ## 2026-04-18
-- 色違いバリエーション作品は名前付きの独立作品として残す方針とした
-  - 理由：名前がついていることでそれぞれの個性・かっこよさがある
-  - カラー選択UI化は見送り
-- サイトをDiscography軸に刷新した
-  - コミュニティ・Discord導線をいったん非表示
-  - 問い合わせ窓口をThreads（@goro_yattemiyo_）に統一
-  - ヒーローをオーロラCanvas背景＋タイプライター演出に刷新
-  - Browse・Hero Preview Windowを非表示に
+- 和風作品を27本追加し、総作品数を53本→80本に拡充した
+- 追加タイトル（全て category: japanese）:
+  Sumi Bloom / Torii Gate / Koi Drift / Zen Circle / Maple Fall / Snow Veil /
+  Noren Slide / Kamon Reveal / Bamboo Rise / Crane Fly / Fuji Mist / Taiko Beat /
+  Incense Drift / Shoji Light / Wave Ukiyo / Firefly Night / Katana Draw /
+  Temple Bell / Washi Tear / Hanabi Burst / Matcha Pour / Matcha Mist /
+  Chazen / Ai Dye / Kinpaku / Urushi / Temari
+- 実装方針: Canvas 2D / CSS animation のみ（外部ライブラリなし）、尺は0.5〜3秒基準を維持
+- ファイル命名: titleToKey()ルール（小文字・スペースをハイフン）で統一
+- index.htmlの公開プレビュー表記を「50+」から「80+」に更新が必要（TODO）
