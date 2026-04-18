@@ -6,78 +6,138 @@
 <title>Sumi Bloom</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0a0a0f; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  body { background: #f0ebe0; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
   canvas { position: absolute; top: 0; left: 0; }
-  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(18px, 4vw, 28px); color: #e8e0d0; letter-spacing: 0.3em; opacity: 0; animation: fadeIn 1s 2s forwards; text-shadow: 0 0 20px rgba(20,10,0,0.8); }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(18px, 4vw, 28px); color: #1a1208; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 1s 2.2s forwards; }
   @keyframes fadeIn { to { opacity: 1; } }
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
-<div class="title">Sumi Bloom</div>
+<div class="title">墨　Sumi Bloom</div>
 <script>
 const c = document.getElementById('c');
 const ctx = c.getContext('2d');
 c.width = window.innerWidth; c.height = window.innerHeight;
 const W = c.width, H = c.height;
-const cx = W/2, cy = H/2;
-const drops = [];
+const cx = W / 2, cy = H / 2;
 let t = 0;
 
-function addDrop(x, y, r, alpha) {
-  drops.push({ x, y, r, maxR: r, alpha, speed: 0.4 + Math.random() * 0.6 });
+function drawWashi() {
+  const g = ctx.createRadialGradient(cx * 0.85, cy * 0.75, 0, cx, cy, Math.max(W, H) * 0.8);
+  g.addColorStop(0, '#f8f2e4');
+  g.addColorStop(0.5, '#f0ebe0');
+  g.addColorStop(1, '#e4ddd0');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  ctx.save();
+  ctx.globalAlpha = 0.035;
+  for (let i = 0; i < 80; i++) {
+    const x1 = Math.random() * W, y1 = Math.random() * H;
+    const len = 15 + Math.random() * 50;
+    const a = Math.random() * Math.PI;
+    ctx.strokeStyle = '#8a7a60';
+    ctx.lineWidth = 0.4;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x1 + Math.cos(a) * len, y1 + Math.sin(a) * len);
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
-addDrop(cx, cy, 0, 1);
-setTimeout(() => addDrop(cx - 30, cy + 20, 0, 0.7), 200);
-setTimeout(() => addDrop(cx + 40, cy - 15, 0, 0.6), 400);
-setTimeout(() => addDrop(cx - 20, cy - 35, 0, 0.5), 600);
-setTimeout(() => addDrop(cx + 15, cy + 40, 0, 0.4), 800);
+const drops = [
+  { x: cx,      y: cy,      delay: 0,  maxR: Math.min(W,H)*0.28, speed: 0.9,  alpha: 0.88 },
+  { x: cx - 45, y: cy + 28, delay: 18, maxR: Math.min(W,H)*0.16, speed: 0.7,  alpha: 0.72 },
+  { x: cx + 52, y: cy - 20, delay: 28, maxR: Math.min(W,H)*0.14, speed: 0.65, alpha: 0.65 },
+  { x: cx - 18, y: cy - 50, delay: 38, maxR: Math.min(W,H)*0.11, speed: 0.6,  alpha: 0.55 },
+  { x: cx + 30, y: cy + 55, delay: 48, maxR: Math.min(W,H)*0.10, speed: 0.55, alpha: 0.50 },
+  { x: cx - 60, y: cy - 15, delay: 55, maxR: Math.min(W,H)*0.09, speed: 0.5,  alpha: 0.42 },
+];
+const radii = drops.map(() => 0);
 
-function drawInk(x, y, r, alpha) {
-  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-  g.addColorStop(0, `rgba(8,6,4,${alpha})`);
-  g.addColorStop(0.4, `rgba(15,12,8,${alpha * 0.8})`);
-  g.addColorStop(0.75, `rgba(20,16,10,${alpha * 0.4})`);
-  g.addColorStop(1, `rgba(10,8,5,0)`);
+// 各滴ごとにエッジジッターを固定（フレームをまたいで同じ形を保つ）
+const edgeJitters = drops.map(d => {
+  const segs = 28;
+  return Array.from({length: segs}, (_, i) => 0.84 + Math.sin(i * 2.3 + d.x * 0.1) * 0.13 + Math.random() * 0.05);
+});
+const fiberAngles = drops.map((d, di) => {
+  const count = 6 + Math.floor(drops[di].maxR / 28);
+  return Array.from({length: count}, (_, i) => (i / count) * Math.PI * 2 + d.x * 0.01);
+});
+const fiberLenRatios = drops.map((d, di) => {
+  const count = fiberAngles[di].length;
+  return Array.from({length: count}, () => 0.12 + Math.random() * 0.22);
+});
+
+function drawDrop(d, r, di) {
+  if (r <= 1) return;
+  const progress = Math.min(1, r / d.maxR);
+
+  const g = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, r);
+  g.addColorStop(0,    `rgba(10,6,2,${d.alpha})`);
+  g.addColorStop(0.35, `rgba(14,9,4,${d.alpha * 0.88})`);
+  g.addColorStop(0.68, `rgba(18,12,6,${d.alpha * 0.48})`);
+  g.addColorStop(0.88, `rgba(14,9,4,${d.alpha * 0.18})`);
+  g.addColorStop(1,    `rgba(8,5,2,0)`);
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
   ctx.fill();
-}
 
-function loop() {
-  ctx.clearRect(0, 0, W, H);
-  t++;
-
-  drops.forEach(d => {
-    if (d.r < 180) d.r += d.speed * (1 - d.r / 200);
-    else d.r += 0.05;
-    drawInk(d.x, d.y, d.r * 1.5, d.alpha * (1 - d.r / 200));
-  });
-
-  // 繊維のような筋
-  if (t < 120) {
+  // エッジの不規則な粒（水分が和紙繊維に沿う）
+  if (progress > 0.25) {
+    const jitters = edgeJitters[di];
+    const segs = jitters.length;
     ctx.save();
-    ctx.strokeStyle = `rgba(5,4,2,${0.3 * (1 - t/120)})`;
-    ctx.lineWidth = 0.5;
-    for (let i = 0; i < 6; i++) {
-      const angle = (i / 6) * Math.PI * 2 + t * 0.01;
-      const len = t * 0.8;
+    ctx.fillStyle = `rgba(10,6,2,1)`;
+    for (let i = 0; i < segs; i++) {
+      const a = (i / segs) * Math.PI * 2;
+      const er = r * 1.14 * jitters[i];
+      const sz = r * 0.055 * (0.6 + Math.random() * 0.5) * progress;
+      ctx.globalAlpha = d.alpha * 0.22 * progress;
       ctx.beginPath();
-      ctx.moveTo(cx, cy);
+      ctx.arc(d.x + Math.cos(a) * er, d.y + Math.sin(a) * er, sz, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // 毛細管の筋
+  if (progress > 0.2 && progress < 0.98) {
+    const angles = fiberAngles[di];
+    const lenRatios = fiberLenRatios[di];
+    ctx.save();
+    for (let i = 0; i < angles.length; i++) {
+      const a = angles[i];
+      const flen = r * lenRatios[i] * progress;
+      ctx.strokeStyle = `rgba(10,6,2,${d.alpha * 0.28 * progress})`;
+      ctx.lineWidth = 0.5 + Math.random() * 0.7;
+      ctx.beginPath();
+      ctx.moveTo(d.x + Math.cos(a) * r * 0.82, d.y + Math.sin(a) * r * 0.82);
       ctx.quadraticCurveTo(
-        cx + Math.cos(angle + 0.3) * len * 0.5,
-        cy + Math.sin(angle + 0.3) * len * 0.5,
-        cx + Math.cos(angle) * len,
-        cy + Math.sin(angle) * len
+        d.x + Math.cos(a + 0.12) * (r + flen * 0.45),
+        d.y + Math.sin(a + 0.12) * (r + flen * 0.45),
+        d.x + Math.cos(a) * (r * 0.9 + flen),
+        d.y + Math.sin(a) * (r * 0.9 + flen)
       );
       ctx.stroke();
     }
     ctx.restore();
   }
+}
 
-  if (t < 300) requestAnimationFrame(loop);
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+  drawWashi();
+  drops.forEach((d, i) => {
+    if (t > d.delay) {
+      radii[i] = d.maxR * (1 - Math.exp(-(t - d.delay) * d.speed * 0.025));
+    }
+    drawDrop(d, radii[i], i);
+  });
+  if (t < 320) requestAnimationFrame(loop);
 }
 loop();
 </script>

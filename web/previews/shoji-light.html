@@ -6,9 +6,9 @@
 <title>Shoji Light</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0a0906; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  body { background: #1a1408; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
   canvas { position: absolute; top: 0; left: 0; }
-  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #302820; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 1.5s 2s forwards; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #2a1e10; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 1.5s 2.2s forwards; }
   @keyframes fadeIn { to { opacity: 1; } }
 </style>
 </head>
@@ -22,83 +22,173 @@ c.width = window.innerWidth; c.height = window.innerHeight;
 const W = c.width, H = c.height;
 let t = 0;
 
-function easeInOut(x) { return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; }
+function easeInOut(x) { return x < 0.5 ? 2*x*x : 1 - Math.pow(-2*x+2,2)/2; }
 
-function drawShoji(lightProgress) {
-  const panelW = Math.min(W * 0.8, 420);
-  const panelH = Math.min(H * 0.8, 520);
+// 障子のコマに和紙テクスチャを描く
+function drawWashiCell(x, y, w, h, lightAlpha) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.clip();
+
+  // 和紙のベース色（光を透過する温かみ）
+  const paperGrad = ctx.createRadialGradient(
+    x + w * 0.4, y + h * 0.35, 0,
+    x + w * 0.5, y + h * 0.5, Math.max(w, h) * 0.9
+  );
+  paperGrad.addColorStop(0, `rgba(255,248,228,${lightAlpha})`);
+  paperGrad.addColorStop(0.5, `rgba(248,238,210,${lightAlpha * 0.92})`);
+  paperGrad.addColorStop(1, `rgba(235,222,192,${lightAlpha * 0.80})`);
+  ctx.fillStyle = paperGrad;
+  ctx.fillRect(x, y, w, h);
+
+  // 和紙のむら（光の透け具合のランダムな濃淡）
+  ctx.save();
+  ctx.globalCompositeOperation = 'multiply';
+  for (let i = 0; i < 6; i++) {
+    const mx = x + Math.random() * w;
+    const my = y + Math.random() * h;
+    const mr = Math.random() * Math.min(w, h) * 0.5;
+    const mg = ctx.createRadialGradient(mx, my, 0, mx, my, mr);
+    mg.addColorStop(0, `rgba(200,185,155,${lightAlpha * 0.15})`);
+    mg.addColorStop(1, 'rgba(200,185,155,0)');
+    ctx.fillStyle = mg;
+    ctx.beginPath(); ctx.arc(mx, my, mr, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+
+  // 繊維の筋（和紙の繊維感）
+  ctx.save();
+  ctx.globalAlpha = lightAlpha * 0.06;
+  for (let i = 0; i < 12; i++) {
+    const fx = x + Math.random() * w;
+    const fy = y + Math.random() * h;
+    const fa = Math.random() * Math.PI;
+    const fl = 8 + Math.random() * 25;
+    ctx.strokeStyle = '#8a7855';
+    ctx.lineWidth = 0.3 + Math.random() * 0.4;
+    ctx.beginPath();
+    ctx.moveTo(fx, fy);
+    ctx.lineTo(fx + Math.cos(fa)*fl, fy + Math.sin(fa)*fl);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  ctx.restore();
+}
+
+function drawShoji(lightP) {
+  const panelW = Math.min(W * 0.78, 400);
+  const panelH = Math.min(H * 0.82, 520);
   const px = (W - panelW) / 2;
   const py = (H - panelH) / 2;
 
-  // 障子の光（背面から）
-  if (lightProgress > 0) {
-    const lightAlpha = easeInOut(lightProgress);
-
-    // メインの光
-    const lg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H) * 0.6);
-    lg.addColorStop(0, `rgba(255,240,200,${lightAlpha * 0.8})`);
-    lg.addColorStop(0.3, `rgba(255,230,180,${lightAlpha * 0.5})`);
-    lg.addColorStop(1, `rgba(200,170,120,0)`);
-    ctx.fillStyle = lg;
+  // 障子の影（後ろの暗い部屋）
+  if (lightP < 1) {
+    ctx.fillStyle = `rgba(20,15,8,${1 - lightP * 0.6})`;
     ctx.fillRect(0, 0, W, H);
   }
 
-  // 障子の枠
-  ctx.strokeStyle = '#2a2018';
-  ctx.lineWidth = 6;
-  ctx.strokeRect(px, py, panelW, panelH);
-
-  // 縦の桟（3本）
-  const cols = 4;
-  const colW = panelW / cols;
-  ctx.lineWidth = 3;
-  for (let i = 1; i < cols; i++) {
-    ctx.beginPath();
-    ctx.moveTo(px + colW * i, py);
-    ctx.lineTo(px + colW * i, py + panelH);
-    ctx.stroke();
+  // 障子越しの光（背面からの外光）
+  if (lightP > 0) {
+    const outerGlow = ctx.createRadialGradient(W/2, H*0.42, 0, W/2, H*0.5, Math.max(W,H)*0.65);
+    outerGlow.addColorStop(0,   `rgba(255,240,200,${lightP * 0.55})`);
+    outerGlow.addColorStop(0.3, `rgba(240,220,170,${lightP * 0.35})`);
+    outerGlow.addColorStop(0.7, `rgba(200,170,120,${lightP * 0.15})`);
+    outerGlow.addColorStop(1,   'rgba(180,140,90,0)');
+    ctx.fillStyle = outerGlow;
+    ctx.fillRect(0, 0, W, H);
   }
 
-  // 横の桟（和紙のコマ）
-  const rows = 8;
-  const rowH = panelH / rows;
-  for (let i = 1; i < rows; i++) {
-    ctx.lineWidth = i === Math.floor(rows * 0.3) ? 4 : 2;
-    ctx.beginPath();
-    ctx.moveTo(px, py + rowH * i);
-    ctx.lineTo(px + panelW, py + rowH * i);
-    ctx.stroke();
-  }
+  // 桟の寸法
+  const FRAME = 10;    // 外枠の太さ
+  const STILE = 5;     // 縦桟・横桟の太さ
+  const COLS = 4;
+  const ROWS = 8;
+  // 下部の鏡板（無双）エリア
+  const MIRROR_H = panelH * 0.22;
+  const PAPER_H = panelH - MIRROR_H - FRAME * 2;
 
-  // 和紙のテクスチャ（光を通す）
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const cellX = px + col * colW;
-      const cellY = py + row * rowH;
-      const cellAlpha = lightProgress * (0.5 + Math.sin((row + col) * 0.8) * 0.1);
+  const cellW = (panelW - FRAME * 2) / COLS;
+  const cellH = (PAPER_H - STILE * (ROWS - 1)) / ROWS;
 
-      const paperGrad = ctx.createLinearGradient(cellX, cellY, cellX + colW, cellY + rowH);
-      paperGrad.addColorStop(0, `rgba(255,248,228,${cellAlpha})`);
-      paperGrad.addColorStop(1, `rgba(245,235,210,${cellAlpha * 0.85})`);
-      ctx.fillStyle = paperGrad;
-      ctx.fillRect(cellX + 2, cellY + 2, colW - 4, rowH - 4);
+  // 和紙コマを描く（光が透けている）
+  if (lightP > 0) {
+    for (let row = 0; row < ROWS; row++) {
+      for (let col = 0; col < COLS; col++) {
+        const cx2 = px + FRAME + col * cellW + (col > 0 ? STILE * col : 0);
+        const cy2 = py + FRAME + row * (cellH + STILE);
+        // 光のムラ（上部ほど明るい）
+        const rowLight = lightP * (0.75 + (1 - row / ROWS) * 0.25);
+        // コマごとにわずかに差をつける
+        const colLight = rowLight * (0.92 + col * 0.025);
+        drawWashiCell(cx2, cy2, cellW - STILE, cellH, colLight);
+      }
     }
   }
 
-  // 障子の影（手前に落ちる）
-  const shadowAlpha = lightProgress * 0.3;
-  const shadowOffset = 12;
-  ctx.fillStyle = `rgba(0,0,0,${shadowAlpha * 0.5})`;
-  ctx.fillRect(px + shadowOffset, py + shadowOffset, panelW, panelH);
-  ctx.clearRect(px, py, panelW, panelH); // 影のはみ出し消し
+  // 外枠（木の框）
+  ctx.fillStyle = '#2a1e0e';
+  ctx.fillRect(px, py, panelW, FRAME);                          // 上
+  ctx.fillRect(px, py + panelH - FRAME, panelW, FRAME);        // 下
+  ctx.fillRect(px, py, FRAME, panelH);                         // 左
+  ctx.fillRect(px + panelW - FRAME, py, FRAME, panelH);        // 右
+
+  // 縦桟
+  for (let col = 1; col < COLS; col++) {
+    const sx = px + FRAME + col * cellW + STILE * (col - 0.5);
+    ctx.fillStyle = '#2a1e0e';
+    ctx.fillRect(sx - STILE/2, py + FRAME, STILE, PAPER_H);
+  }
+
+  // 横桟
+  for (let row = 1; row < ROWS; row++) {
+    const sy = py + FRAME + row * (cellH + STILE) - STILE;
+    ctx.fillStyle = '#2a1e0e';
+    ctx.fillRect(px + FRAME, sy, panelW - FRAME * 2, STILE);
+  }
+
+  // 鏡板（下部・木製無双部分）
+  const mirrorY = py + FRAME + PAPER_H + STILE;
+  const mirrorGrad = ctx.createLinearGradient(px, mirrorY, px + panelW, mirrorY);
+  mirrorGrad.addColorStop(0,   '#1e1408');
+  mirrorGrad.addColorStop(0.3, '#2e2010');
+  mirrorGrad.addColorStop(0.7, '#2e2010');
+  mirrorGrad.addColorStop(1,   '#1e1408');
+  ctx.fillStyle = mirrorGrad;
+  ctx.fillRect(px + FRAME, mirrorY, panelW - FRAME * 2, MIRROR_H - STILE);
+
+  // 鏡板の木目
+  ctx.save();
+  ctx.globalAlpha = lightP * 0.12;
+  for (let i = 0; i < 6; i++) {
+    const gx = px + FRAME + (panelW - FRAME*2) * (i / 5);
+    const woodG = ctx.createLinearGradient(gx, mirrorY, gx + 15, mirrorY + MIRROR_H);
+    woodG.addColorStop(0, 'rgba(100,70,30,0)');
+    woodG.addColorStop(0.5, 'rgba(100,70,30,0.5)');
+    woodG.addColorStop(1, 'rgba(100,70,30,0)');
+    ctx.strokeStyle = woodG;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(gx + Math.sin(i)*3, mirrorY);
+    ctx.lineTo(gx + Math.sin(i+2)*5, mirrorY + MIRROR_H);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // 障子全体に落ちる柔らかい影（立体感）
+  const shadowGrad = ctx.createLinearGradient(px, py, px + panelW * 0.3, py);
+  shadowGrad.addColorStop(0, `rgba(0,0,0,${0.25 * lightP})`);
+  shadowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = shadowGrad;
+  ctx.fillRect(px, py, panelW * 0.3, panelH);
 }
 
 function loop() {
   ctx.clearRect(0, 0, W, H);
   t++;
 
-  const lightP = Math.min(1, t / 120);
-
+  const lightP = easeInOut(Math.min(1, t / 110));
   drawShoji(lightP);
 
   if (t < 350) requestAnimationFrame(loop);

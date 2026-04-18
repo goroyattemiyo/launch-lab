@@ -6,9 +6,9 @@
 <title>Zen Circle</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0a0a0f; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  body { background: #f0ebe0; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
   canvas { position: absolute; top: 0; left: 0; }
-  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #e0d8cc; letter-spacing: 0.5em; opacity: 0; animation: fadeIn 0.8s 2s forwards; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #1a1208; letter-spacing: 0.5em; opacity: 0; animation: fadeIn 0.8s 2.2s forwards; }
   @keyframes fadeIn { to { opacity: 1; } }
 </style>
 </head>
@@ -20,70 +20,132 @@ const c = document.getElementById('c');
 const ctx = c.getContext('2d');
 c.width = window.innerWidth; c.height = window.innerHeight;
 const W = c.width, H = c.height;
-const cx = W/2, cy = H/2;
+const cx = W / 2, cy = H / 2;
 const R = Math.min(W, H) * 0.3;
 let t = 0;
-const DURATION = 80; // フレーム数で一筆
+const DRAW_FRAMES = 70;
+
+// 和紙
+function drawWashi() {
+  const g = ctx.createRadialGradient(cx * 0.9, cy * 0.8, 0, cx, cy, Math.max(W, H) * 0.8);
+  g.addColorStop(0, '#f8f2e4');
+  g.addColorStop(1, '#e8e0d0');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  ctx.save();
+  ctx.globalAlpha = 0.03;
+  for (let i = 0; i < 60; i++) {
+    const x = Math.random() * W, y = Math.random() * H;
+    const a = Math.random() * Math.PI;
+    const l = 20 + Math.random() * 40;
+    ctx.strokeStyle = '#7a6a50'; ctx.lineWidth = 0.4;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.cos(a)*l, y + Math.sin(a)*l); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// 筆圧カーブ（一筆の太さ変化）
+function brushWidth(progress, maxW) {
+  if (progress < 0.06) return maxW * (progress / 0.06) * 0.5;        // 入り（細い）
+  if (progress < 0.18) return maxW * (0.5 + (progress - 0.06) / 0.12 * 0.5); // 太くなる
+  if (progress < 0.72) return maxW * (1.0 - (progress - 0.18) / 0.54 * 0.15); // 安定
+  if (progress < 0.90) return maxW * (0.85 - (progress - 0.72) / 0.18 * 0.45); // 抜き
+  return maxW * (0.4 * (1 - (progress - 0.90) / 0.10));              // かすれ
+}
+
+// 墨の濃淡（筆の動きによる）
+function inkAlpha(progress) {
+  if (progress < 0.05) return 0.6 + progress / 0.05 * 0.3;
+  if (progress < 0.75) return 0.85 + Math.sin(progress * Math.PI * 3) * 0.08;
+  return 0.85 * (1 - (progress - 0.75) / 0.25);
+}
+
+// かすれ用の固定ノイズ
+const scratchNoise = Array.from({length: 120}, (_, i) => ({
+  dAngle: (Math.random() - 0.5) * 0.08,
+  dR:     (Math.random() - 0.5) * 6,
+  len:    4 + Math.random() * 14,
+  alpha:  Math.random() * 0.35,
+  width:  0.3 + Math.random() * 1.0,
+}));
 
 function easeInOut(x) {
   return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
-}
-
-// 筆圧変化（円の描画中の太さ変化）
-function brushWidth(progress) {
-  // 始まりは細く、途中で太く、終わりはかすれる
-  if (progress < 0.1) return progress / 0.1 * 14;
-  if (progress < 0.7) return 14 + Math.sin(progress * Math.PI) * 6;
-  return 14 * (1 - (progress - 0.7) / 0.3) + 4;
 }
 
 function loop() {
   ctx.clearRect(0, 0, W, H);
   t++;
 
-  const progress = Math.min(1, t / DURATION);
-  const easedP = easeInOut(progress);
+  drawWashi();
 
-  // 円弧を描く（始点から終点まで）
-  const startAngle = -Math.PI / 2; // 上から開始
-  const endAngle = startAngle + easedP * Math.PI * 2;
+  const rawP = Math.min(1, t / DRAW_FRAMES);
+  const progress = easeInOut(rawP);
+  const startAngle = -Math.PI / 2;
+  const steps = Math.floor(progress * 140);
+  const maxW = Math.min(W, H) * 0.028;
 
-  // 筆のセグメントを描く
-  const steps = Math.floor(easedP * 120);
+  // 円弧を細かいセグメントで描く
   for (let i = 0; i < steps; i++) {
-    const a0 = startAngle + (i / 120) * Math.PI * 2;
-    const a1 = startAngle + ((i + 1) / 120) * Math.PI * 2;
-    const p = i / 120;
+    const p0 = i / 140;
+    const p1 = (i + 1) / 140;
+    const a0 = startAngle + p0 * Math.PI * 2;
+    const a1 = startAngle + p1 * Math.PI * 2;
+    const w = brushWidth(p0, maxW);
+    const alpha = inkAlpha(p0);
+
+    // わずかな手ブレ（筆のリアルさ）
+    const jitter = (Math.sin(i * 1.7) * 0.5 + Math.sin(i * 3.1) * 0.3) * 1.2;
+    const r0 = R + jitter;
 
     ctx.beginPath();
-    ctx.arc(cx, cy, R, a0, a1);
-    ctx.lineWidth = brushWidth(p);
+    ctx.arc(cx, cy, r0, a0, a1);
+    ctx.lineWidth = w;
     ctx.lineCap = 'round';
-
-    // 墨の濃淡
-    const inkAlpha = 0.7 + Math.sin(p * Math.PI * 4) * 0.15;
-    ctx.strokeStyle = `rgba(20,15,10,${inkAlpha})`;
+    ctx.strokeStyle = `rgba(10,6,2,${alpha})`;
     ctx.stroke();
-  }
 
-  // かすれ（終端）
-  if (progress > 0.85) {
-    const featherProgress = (progress - 0.85) / 0.15;
-    const angle = startAngle + easedP * Math.PI * 2;
-    for (let i = 0; i < 8; i++) {
-      const da = (Math.random() - 0.5) * 0.1;
-      const dr = (Math.random() - 0.5) * 8;
-      const len = Math.random() * 15 * featherProgress;
+    // 筆の側面の薄い染み（墨のにじみ）
+    if (w > maxW * 0.4 && i % 3 === 0) {
       ctx.beginPath();
-      ctx.moveTo(cx + Math.cos(angle + da) * (R + dr), cy + Math.sin(angle + da) * (R + dr));
-      ctx.lineTo(cx + Math.cos(angle + da + 0.05) * (R + dr + len), cy + Math.sin(angle + da + 0.05) * (R + dr + len));
-      ctx.lineWidth = Math.random() * 2;
-      ctx.strokeStyle = `rgba(20,15,10,${Math.random() * 0.4})`;
+      ctx.arc(cx, cy, r0 + w * 0.45, a0, a1);
+      ctx.lineWidth = w * 0.3;
+      ctx.strokeStyle = `rgba(10,6,2,${alpha * 0.18})`;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, r0 - w * 0.45, a0, a1);
+      ctx.lineWidth = w * 0.3;
+      ctx.strokeStyle = `rgba(10,6,2,${alpha * 0.12})`;
       ctx.stroke();
     }
   }
 
-  if (t < 200) requestAnimationFrame(loop);
+  // かすれ（終端付近）
+  if (progress > 0.78) {
+    const scratchP = (progress - 0.78) / 0.22;
+    const endAngle = startAngle + progress * Math.PI * 2;
+    const numScratches = Math.floor(scratchP * 40);
+
+    ctx.save();
+    for (let i = 0; i < numScratches; i++) {
+      const n = scratchNoise[i % scratchNoise.length];
+      const a = endAngle - scratchP * 0.4 + n.dAngle * (1 + scratchP);
+      const r = R + n.dR;
+      ctx.strokeStyle = `rgba(10,6,2,${n.alpha * scratchP * (1 - i / numScratches)})`;
+      ctx.lineWidth = n.width;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+      ctx.lineTo(
+        cx + Math.cos(a + 0.04) * (r + n.len),
+        cy + Math.sin(a + 0.04) * (r + n.len)
+      );
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  if (t < 280) requestAnimationFrame(loop);
 }
 loop();
 </script>

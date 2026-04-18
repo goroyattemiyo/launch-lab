@@ -6,9 +6,9 @@
 <title>Temple Bell</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #08080a; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  body { background: #06080a; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
   canvas { position: absolute; top: 0; left: 0; }
-  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #c8b880; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 1.5s 0.5s forwards; margin-top: 140px; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #c8b870; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 1.5s 0.3s forwards; margin-top: 160px; }
   @keyframes fadeIn { to { opacity: 1; } }
 </style>
 </head>
@@ -20,63 +20,184 @@ const c = document.getElementById('c');
 const ctx = c.getContext('2d');
 c.width = window.innerWidth; c.height = window.innerHeight;
 const W = c.width, H = c.height;
-const cx = W/2, cy = H * 0.38;
+const cx = W / 2;
 let t = 0;
 const ripples = [];
-const strikes = [0, 90, 165];
 
-function addRipple() {
-  ripples.push({ r: 5, alpha: 0.7, speed: 1.8 });
+const BELL_W  = Math.min(W * 0.14, 80);
+const BELL_H  = BELL_W * 1.8;
+const BELL_CY = H * 0.36;
+
+const strikes = [0, 95, 175, 240];
+
+function addRipple(strength) {
+  for (let i = 0; i < 3; i++) {
+    ripples.push({
+      r: BELL_W * 0.5,
+      maxR: Math.min(W, H) * (0.38 + i * 0.08),
+      alpha: (0.7 - i * 0.15) * strength,
+      speed: (2.2 + i * 0.6) * strength,
+      delay: i * 8,
+      born: t,
+    });
+  }
 }
 
-function drawBell(swingAngle) {
+function drawBell(swingAngle, impactGlow) {
   ctx.save();
-  ctx.translate(cx, cy);
+  ctx.translate(cx, BELL_CY);
   ctx.rotate(swingAngle);
 
-  const bw = Math.min(W * 0.12, 60);
-  const bh = bw * 1.5;
-
-  // 吊り紐
-  ctx.strokeStyle = '#5a4830';
-  ctx.lineWidth = 3;
+  // ---- 吊り金具・竜頭（りゅうず）----
+  // 龍頭の吊り紐
+  ctx.strokeStyle = '#5a4828';
+  ctx.lineWidth = 4;
   ctx.beginPath();
-  ctx.moveTo(0, -bh * 0.6);
-  ctx.lineTo(0, -bh * 1.2);
+  ctx.moveTo(0, -BELL_H * 0.55);
+  ctx.lineTo(0, -BELL_H * 1.05);
   ctx.stroke();
 
-  // 梵鐘の形（逆台形ベース）
-  const bellGrad = ctx.createLinearGradient(-bw, 0, bw, 0);
-  bellGrad.addColorStop(0, '#2a2618');
-  bellGrad.addColorStop(0.25, '#4a4430');
-  bellGrad.addColorStop(0.5, '#6a6040');
-  bellGrad.addColorStop(0.75, '#4a4430');
-  bellGrad.addColorStop(1, '#2a2618');
-  ctx.fillStyle = bellGrad;
-
+  // 龍頭（上部の飾り金具）
+  const rdg = ctx.createRadialGradient(-BELL_W*0.1, -BELL_H*0.52, 0, 0, -BELL_H*0.5, BELL_W*0.3);
+  rdg.addColorStop(0, '#706040');
+  rdg.addColorStop(1, '#3a3020');
+  ctx.fillStyle = rdg;
   ctx.beginPath();
-  ctx.moveTo(-bw * 0.4, -bh * 0.6);  // 上辺左
-  ctx.lineTo(bw * 0.4, -bh * 0.6);   // 上辺右
-  ctx.quadraticCurveTo(bw * 0.55, 0, bw * 0.45, bh * 0.4);
-  ctx.quadraticCurveTo(bw * 0.2, bh * 0.55, 0, bh * 0.55);
-  ctx.quadraticCurveTo(-bw * 0.2, bh * 0.55, -bw * 0.45, bh * 0.4);
-  ctx.quadraticCurveTo(-bw * 0.55, 0, -bw * 0.4, -bh * 0.6);
-  ctx.closePath();
+  ctx.ellipse(0, -BELL_H * 0.52, BELL_W * 0.28, BELL_W * 0.18, 0, 0, Math.PI * 2);
   ctx.fill();
+  ctx.strokeStyle = '#8a7040';
+  ctx.lineWidth = 1;
+  ctx.stroke();
 
-  // 鐘の縁飾り
-  ctx.strokeStyle = '#8a7840';
+  // ---- 鐘身のシルエット（梵鐘の特徴的な形） ----
+  // 梵鐘は：上部がわずかに広く、中ほどでくびれ、下端が外に開く
+  const bellPath = () => {
+    ctx.beginPath();
+    ctx.moveTo(-BELL_W * 0.32, -BELL_H * 0.50);     // 上左
+    ctx.lineTo( BELL_W * 0.32, -BELL_H * 0.50);     // 上右
+    // 右側の輪郭
+    ctx.bezierCurveTo(
+      BELL_W * 0.55, -BELL_H * 0.30,   // 上部がやや広がる
+      BELL_W * 0.42, -BELL_H * 0.05,   // 中ほどでくびれ
+      BELL_W * 0.58,  BELL_H * 0.45    // 下端が外に開く
+    );
+    ctx.lineTo(BELL_W * 0.62, BELL_H * 0.50);
+    ctx.lineTo(-BELL_W * 0.62, BELL_H * 0.50);
+    ctx.lineTo(-BELL_W * 0.58, BELL_H * 0.45);
+    // 左側の輪郭（対称）
+    ctx.bezierCurveTo(
+      -BELL_W * 0.42, -BELL_H * 0.05,
+      -BELL_W * 0.55, -BELL_H * 0.30,
+      -BELL_W * 0.32, -BELL_H * 0.50
+    );
+    ctx.closePath();
+  };
+
+  // 鐘の影（奥行き）
+  ctx.save();
+  ctx.translate(4, 6);
+  bellPath();
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fill();
+  ctx.restore();
+
+  // 鐘身のグラデーション（青銅・緑青）
+  bellPath();
+  ctx.save();
+  ctx.clip();
+
+  const bg = ctx.createLinearGradient(-BELL_W, -BELL_H*0.5, BELL_W, BELL_H*0.5);
+  bg.addColorStop(0,    '#2a3828');   // 左端：暗い
+  bg.addColorStop(0.15, '#3a5038');   // 左側：緑青
+  bg.addColorStop(0.3,  '#4a6848');   // やや明るい緑
+  bg.addColorStop(0.45, '#5a7a58');   // ハイライト
+  bg.addColorStop(0.55, '#4a6848');
+  bg.addColorStop(0.7,  '#38503a');
+  bg.addColorStop(0.85, '#283830');
+  bg.addColorStop(1,    '#182820');   // 右端：暗い
+  ctx.fillStyle = bg;
+  ctx.fillRect(-BELL_W, -BELL_H, BELL_W*2, BELL_H*2);
+
+  // 鐘の縦方向の光沢（曲面感）
+  const vg = ctx.createLinearGradient(0, -BELL_H*0.5, 0, BELL_H*0.5);
+  vg.addColorStop(0,   'rgba(80,100,70,0.4)');
+  vg.addColorStop(0.3, 'rgba(100,130,90,0.2)');
+  vg.addColorStop(0.6, 'rgba(60,80,55,0.3)');
+  vg.addColorStop(1,   'rgba(30,45,30,0.5)');
+  ctx.fillStyle = vg;
+  ctx.fillRect(-BELL_W, -BELL_H, BELL_W*2, BELL_H*2);
+
+  // 打撃光（impactGlow）
+  if (impactGlow > 0) {
+    const ig = ctx.createRadialGradient(BELL_W * 0.2, BELL_H * 0.08, 0, 0, 0, BELL_W * 1.2);
+    ig.addColorStop(0, `rgba(255,220,120,${impactGlow * 0.6})`);
+    ig.addColorStop(0.4, `rgba(200,160,80,${impactGlow * 0.3})`);
+    ig.addColorStop(1, 'rgba(160,100,40,0)');
+    ctx.fillStyle = ig;
+    ctx.fillRect(-BELL_W, -BELL_H, BELL_W*2, BELL_H*2);
+  }
+
+  ctx.restore();
+
+  // 鐘身の外枠線
+  bellPath();
+  ctx.strokeStyle = '#2a3828';
   ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(-bw * 0.45, bh * 0.35);
-  ctx.quadraticCurveTo(0, bh * 0.5, bw * 0.45, bh * 0.35);
   ctx.stroke();
 
-  // 撞座（打つ場所）
-  ctx.fillStyle = '#9a8840';
+  // ---- 蓮弁帯（れんべんたい）装飾 ----
+  // 上部の帯
+  const bandY1 = -BELL_H * 0.35;
+  ctx.strokeStyle = 'rgba(80,100,70,0.8)';
+  ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.arc(0, bh * 0.08, bw * 0.12, 0, Math.PI * 2);
+  ctx.moveTo(-BELL_W * 0.55, bandY1);
+  ctx.lineTo( BELL_W * 0.55, bandY1);
+  ctx.stroke();
+
+  // 中間の帯
+  const bandY2 = -BELL_H * 0.05;
+  ctx.beginPath();
+  ctx.moveTo(-BELL_W * 0.46, bandY2);
+  ctx.lineTo( BELL_W * 0.46, bandY2);
+  ctx.stroke();
+
+  // 乳（にゅう）の突起（上部の格子状のドット）
+  const nyuRows = 2, nyuCols = 4;
+  for (let r = 0; r < nyuRows; r++) {
+    for (let col = 0; col < nyuCols; col++) {
+      const nx = -BELL_W * 0.35 + (BELL_W * 0.7 / (nyuCols - 1)) * col;
+      const ny = -BELL_H * 0.46 + r * BELL_H * 0.08;
+      const ng = ctx.createRadialGradient(nx-1, ny-1, 0, nx, ny, 4);
+      ng.addColorStop(0, '#6a8060');
+      ng.addColorStop(1, '#2a3828');
+      ctx.fillStyle = ng;
+      ctx.beginPath();
+      ctx.arc(nx, ny, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // ---- 撞座（どうざ）----
+  const dzX = BELL_W * 0.22, dzY = BELL_H * 0.08;
+  const dzg = ctx.createRadialGradient(dzX - 2, dzY - 2, 0, dzX, dzY, BELL_W * 0.16);
+  dzg.addColorStop(0, '#706050');
+  dzg.addColorStop(0.5, '#4a4030');
+  dzg.addColorStop(1, '#2a2820');
+  ctx.fillStyle = dzg;
+  ctx.beginPath();
+  ctx.arc(dzX, dzY, BELL_W * 0.16, 0, Math.PI * 2);
   ctx.fill();
+  ctx.strokeStyle = 'rgba(100,90,60,0.6)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // ---- 下縁の口帯 ----
+  const kuchig = ctx.createLinearGradient(-BELL_W*0.62, BELL_H*0.42, -BELL_W*0.62, BELL_H*0.5);
+  kuchig.addColorStop(0, '#3a5038');
+  kuchig.addColorStop(1, '#1a2818');
+  ctx.fillStyle = kuchig;
+  ctx.fillRect(-BELL_W * 0.65, BELL_H * 0.42, BELL_W * 1.3, BELL_H * 0.1);
 
   ctx.restore();
 }
@@ -85,53 +206,58 @@ function loop() {
   ctx.clearRect(0, 0, W, H);
   t++;
 
-  // ストライクタイミング
+  // ビート検出
+  let swingAngle = 0, impactGlow = 0;
   strikes.forEach(s => {
-    if (t === s) addRipple();
+    const dt = t - s;
+    if (dt >= 0 && dt < 5 && dt === 0) addRipple(0.7 + Math.random() * 0.3);
+    if (dt >= 0 && dt < 80) {
+      swingAngle += Math.sin(dt * 0.18) * Math.exp(-dt * 0.045) * 0.18;
+      if (dt < 12) impactGlow = Math.max(impactGlow, 1 - dt / 12);
+    }
   });
 
-  // 揺れ
-  const strikeT = strikes.reduce((closest, s) => {
-    return Math.abs(t - s) < Math.abs(t - closest) ? s : closest;
-  }, Infinity);
-  const dt = t - strikeT;
-  const swing = dt >= 0 && dt < 80
-    ? Math.sin(dt * 0.2) * Math.exp(-dt * 0.04) * 0.15
-    : 0;
+  // 環境光（寺の夜）
+  ctx.fillStyle = '#06080a';
+  ctx.fillRect(0, 0, W, H);
 
-  drawBell(swing);
-
-  // 波紋
+  // 波紋の描画
   ripples.forEach((r, i) => {
+    if (t < r.born + r.delay) return;
     r.r += r.speed;
-    r.speed *= 0.995;
-    r.alpha -= 0.006;
+    r.alpha -= 0.007;
+    if (r.alpha <= 0 || r.r > r.maxR) { ripples.splice(i, 1); return; }
 
-    if (r.alpha <= 0 || r.r > Math.min(W, H) * 0.55) {
-      ripples.splice(i, 1);
-      return;
-    }
-
-    // 楕円波紋
+    // メイン波紋
     ctx.save();
-    ctx.strokeStyle = `rgba(200,180,100,${r.alpha})`;
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = `rgba(180,150,80,${r.alpha})`;
+    ctx.lineWidth = 1.8;
     ctx.beginPath();
-    ctx.ellipse(cx, cy + Math.min(W * 0.12, 60) * 0.6, r.r, r.r * 0.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, BELL_CY + BELL_H * 0.55, r.r, r.r * 0.42, 0, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.restore();
 
-    // 薄い外側リング
-    ctx.save();
-    ctx.strokeStyle = `rgba(200,180,100,${r.alpha * 0.3})`;
+    // 薄い外側
+    ctx.strokeStyle = `rgba(180,150,80,${r.alpha * 0.35})`;
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.ellipse(cx, cy + Math.min(W * 0.12, 60) * 0.6, r.r * 1.15, r.r * 0.55, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, BELL_CY + BELL_H * 0.55, r.r * 1.1, r.r * 0.45, 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
   });
 
-  if (t < 400) requestAnimationFrame(loop);
+  // 打撃時のグロー
+  if (impactGlow > 0) {
+    const gg = ctx.createRadialGradient(cx, BELL_CY, 0, cx, BELL_CY, BELL_H * 2);
+    gg.addColorStop(0,   `rgba(200,170,80,${impactGlow * 0.25})`);
+    gg.addColorStop(0.4, `rgba(160,120,50,${impactGlow * 0.12})`);
+    gg.addColorStop(1,   'rgba(120,80,30,0)');
+    ctx.fillStyle = gg;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  drawBell(swingAngle, impactGlow);
+
+  if (t < 420) requestAnimationFrame(loop);
 }
 loop();
 </script>

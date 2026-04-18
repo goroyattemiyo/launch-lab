@@ -6,9 +6,9 @@
 <title>Katana Draw</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #060608; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  body { background: #06060a; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
   canvas { position: absolute; top: 0; left: 0; }
-  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #e8e0d8; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 0.5s 1.8s forwards; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #d8d0c8; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 0.5s 2s forwards; }
   @keyframes fadeIn { to { opacity: 1; } }
 </style>
 </head>
@@ -23,123 +23,339 @@ const W = c.width, H = c.height;
 let t = 0;
 let flashAlpha = 0;
 
+// 刀の角度・基点
+const BLADE_ANGLE = -Math.PI * 0.28;  // 斜め上方向
+const BASE_X = W * 0.62;
+const BASE_Y = H * 0.70;
+const BLADE_LEN = Math.min(W, H) * 0.58;
+const TSUKA_LEN = BLADE_LEN * 0.28;   // 柄の長さ
+
 function easeOutExpo(x) { return x === 1 ? 1 : 1 - Math.pow(2, -10 * x); }
+function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
 
-function drawKatana(drawProgress, bladeLength) {
-  const angle = -Math.PI / 4; // 45度
-  const startX = W * 0.65;
-  const startY = H * 0.65;
+// 刀身を描く
+function drawBlade(drawP) {
+  if (drawP <= 0) return;
 
-  // 鞘（さや）
+  const exposedLen = BLADE_LEN * drawP;
+  const tipX = BASE_X + Math.cos(BLADE_ANGLE) * exposedLen;
+  const tipY = BASE_Y + Math.sin(BLADE_ANGLE) * exposedLen;
+
+  const perpX = Math.cos(BLADE_ANGLE + Math.PI / 2);
+  const perpY = Math.sin(BLADE_ANGLE + Math.PI / 2);
+
+  // 刃の幅（根本から切っ先へ細くなる）
+  function bladeWidth(ratio) {
+    return (3.5 - ratio * 2.8) * Math.min(W, H) / 500;
+  }
+
   ctx.save();
-  ctx.translate(startX, startY);
-  ctx.rotate(angle);
-  const sayaLen = bladeLength * 0.85;
-  ctx.fillStyle = '#1a1208';
-  ctx.fillRect(-8, -sayaLen, 16, sayaLen);
-  // 鞘の装飾
-  ctx.strokeStyle = '#3a2810';
-  ctx.lineWidth = 1;
-  for (let i = 0; i < 5; i++) {
-    const y = -sayaLen * (i + 1) / 6;
+
+  // ---- 棟（みね）側の面 ----
+  ctx.beginPath();
+  ctx.moveTo(BASE_X + perpX * bladeWidth(0) * 0.3, BASE_Y + perpY * bladeWidth(0) * 0.3);
+  ctx.lineTo(BASE_X - perpX * bladeWidth(0) * 0.7, BASE_Y - perpY * bladeWidth(0) * 0.7);
+
+  // 刀身の輪郭（根本→切っ先）
+  const steps = 40;
+  for (let i = 0; i <= steps; i++) {
+    const r = i / steps;
+    if (r > drawP) break;
+    const px = BASE_X + Math.cos(BLADE_ANGLE) * BLADE_LEN * r;
+    const py = BASE_Y + Math.sin(BLADE_ANGLE) * BLADE_LEN * r;
+    const w = bladeWidth(r / drawP);
+    // 反りの表現（わずかに弧を描く）
+    const sori = Math.sin(r * Math.PI) * BLADE_LEN * 0.018;
+    const soriX = Math.cos(BLADE_ANGLE - Math.PI / 2) * sori;
+    const soriY = Math.sin(BLADE_ANGLE - Math.PI / 2) * sori;
+    ctx.lineTo(px + soriX + perpX * w * 0.3, py + soriY + perpY * w * 0.3);
+  }
+  // 切っ先
+  ctx.lineTo(tipX, tipY);
+  // 刃側を戻る
+  for (let i = steps; i >= 0; i--) {
+    const r = i / steps;
+    if (r > drawP) continue;
+    const px = BASE_X + Math.cos(BLADE_ANGLE) * BLADE_LEN * r;
+    const py = BASE_Y + Math.sin(BLADE_ANGLE) * BLADE_LEN * r;
+    const w = bladeWidth(r / drawP);
+    const sori = Math.sin(r * Math.PI) * BLADE_LEN * 0.018;
+    const soriX = Math.cos(BLADE_ANGLE - Math.PI / 2) * sori;
+    const soriY = Math.sin(BLADE_ANGLE - Math.PI / 2) * sori;
+    ctx.lineTo(px + soriX - perpX * w * 0.7, py + soriY - perpY * w * 0.7);
+  }
+  ctx.closePath();
+
+  // 刀身のグラデーション（金属光沢）
+  const bladeGrad = ctx.createLinearGradient(
+    BASE_X + perpX * bladeWidth(0),
+    BASE_Y + perpY * bladeWidth(0),
+    BASE_X - perpX * bladeWidth(0),
+    BASE_Y - perpY * bladeWidth(0)
+  );
+  bladeGrad.addColorStop(0,    '#d8dce8');  // 棟（鈍い）
+  bladeGrad.addColorStop(0.15, '#e8ecf8');
+  bladeGrad.addColorStop(0.35, '#f4f6ff');  // 平（明るい反射）
+  bladeGrad.addColorStop(0.55, '#e0e4f0');
+  bladeGrad.addColorStop(0.75, '#c8ccd8');
+  bladeGrad.addColorStop(0.9,  '#a8acb8');  // 刃側
+  bladeGrad.addColorStop(1,    '#b8bcc8');
+  ctx.fillStyle = bladeGrad;
+  ctx.fill();
+
+  // ---- 刃文（はもん）----
+  // 直刃（すぐは）スタイル
+  ctx.save();
+  ctx.beginPath();
+  // 刃文の領域にクリップ
+  const hmSteps = 60;
+  ctx.moveTo(BASE_X - perpX * bladeWidth(0) * 0.7, BASE_Y - perpY * bladeWidth(0) * 0.7);
+  for (let i = 0; i <= hmSteps; i++) {
+    const r = i / hmSteps * drawP;
+    const px2 = BASE_X + Math.cos(BLADE_ANGLE) * BLADE_LEN * r;
+    const py2 = BASE_Y + Math.sin(BLADE_ANGLE) * BLADE_LEN * r;
+    const w = bladeWidth(r);
+    const sori = Math.sin(r / drawP * Math.PI) * BLADE_LEN * 0.018;
+    const soriX2 = Math.cos(BLADE_ANGLE - Math.PI/2) * sori;
+    const soriY2 = Math.sin(BLADE_ANGLE - Math.PI/2) * sori;
+    ctx.lineTo(px2 + soriX2 - perpX * w * 0.7, py2 + soriY2 - perpY * w * 0.7);
+  }
+  ctx.lineTo(tipX, tipY);
+  ctx.closePath();
+  ctx.clip();
+
+  // 刃文の白い帯（沸・匂）
+  const hmWidth = bladeWidth(0) * 0.4;
+  for (let i = 0; i <= hmSteps; i++) {
+    const r = i / hmSteps * drawP;
+    const px2 = BASE_X + Math.cos(BLADE_ANGLE) * BLADE_LEN * r;
+    const py2 = BASE_Y + Math.sin(BLADE_ANGLE) * BLADE_LEN * r;
+    const sori = Math.sin(r / drawP * Math.PI) * BLADE_LEN * 0.018;
+    const soriX2 = Math.cos(BLADE_ANGLE - Math.PI/2) * sori;
+    const soriY2 = Math.sin(BLADE_ANGLE - Math.PI/2) * sori;
+    // 刃文の揺らぎ（のたれ刃）
+    const hmOffset = Math.sin(r * 28) * hmWidth * 0.35 + Math.sin(r * 11 + 1.2) * hmWidth * 0.2;
+    const hmX = px2 + soriX2 - perpX * (hmWidth * 0.3 + hmOffset);
+    const hmY = py2 + soriY2 - perpY * (hmWidth * 0.3 + hmOffset);
+
+    const hmg = ctx.createRadialGradient(hmX, hmY, 0, hmX, hmY, hmWidth * 0.9);
+    hmg.addColorStop(0,   'rgba(240,245,255,0.55)');
+    hmg.addColorStop(0.5, 'rgba(220,228,245,0.25)');
+    hmg.addColorStop(1,   'rgba(200,210,235,0)');
+    ctx.fillStyle = hmg;
     ctx.beginPath();
-    ctx.moveTo(-8, y);
-    ctx.lineTo(8, y);
+    ctx.arc(hmX, hmY, hmWidth * 0.9, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // ---- 平（ひら）の磨き反射 ----
+  ctx.save();
+  ctx.globalAlpha = 0.45;
+  const refX1 = BASE_X + perpX * bladeWidth(0) * 0.1;
+  const refY1 = BASE_Y + perpY * bladeWidth(0) * 0.1;
+  const refX2 = tipX + perpX * 0.5;
+  const refY2 = tipY + perpY * 0.5;
+  const refG = ctx.createLinearGradient(refX1, refY1, refX2, refY2);
+  refG.addColorStop(0,   'rgba(255,255,255,0)');
+  refG.addColorStop(0.2, 'rgba(255,255,255,0.6)');
+  refG.addColorStop(0.35,'rgba(255,255,255,0.85)');
+  refG.addColorStop(0.5, 'rgba(255,255,255,0.6)');
+  refG.addColorStop(1,   'rgba(255,255,255,0)');
+  ctx.strokeStyle = refG;
+  ctx.lineWidth = bladeWidth(0) * 0.22;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(refX1, refY1);
+  ctx.lineTo(refX2, refY2);
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.restore();
+}
+
+// 鞘（さや）
+function drawSaya() {
+  const sayaLen = TSUKA_LEN + BLADE_LEN * 0.85;
+  const sayaBaseX = BASE_X - Math.cos(BLADE_ANGLE) * TSUKA_LEN;
+  const sayaBaseY = BASE_Y - Math.sin(BLADE_ANGLE) * TSUKA_LEN;
+  const perpX = Math.cos(BLADE_ANGLE + Math.PI / 2);
+  const perpY = Math.sin(BLADE_ANGLE + Math.PI / 2);
+  const sayaW = 7 * Math.min(W, H) / 500;
+
+  ctx.save();
+  const sg = ctx.createLinearGradient(
+    sayaBaseX + perpX * sayaW, sayaBaseY + perpY * sayaW,
+    sayaBaseX - perpX * sayaW, sayaBaseY - perpY * sayaW
+  );
+  sg.addColorStop(0,   '#1a1208');
+  sg.addColorStop(0.3, '#2e2010');
+  sg.addColorStop(0.55,'#221808');
+  sg.addColorStop(1,   '#100c04');
+  ctx.strokeStyle = sg;
+  ctx.lineWidth = sayaW * 2;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(sayaBaseX, sayaBaseY);
+  ctx.lineTo(
+    sayaBaseX + Math.cos(BLADE_ANGLE) * sayaLen,
+    sayaBaseY + Math.sin(BLADE_ANGLE) * sayaLen
+  );
+  ctx.stroke();
+
+  // 鯉口（こいくち）金具
+  ctx.strokeStyle = '#786040';
+  ctx.lineWidth = sayaW * 2.2;
+  ctx.lineCap = 'butt';
+  ctx.beginPath();
+  ctx.moveTo(sayaBaseX - Math.cos(BLADE_ANGLE) * 2, sayaBaseY - Math.sin(BLADE_ANGLE) * 2);
+  ctx.lineTo(sayaBaseX + Math.cos(BLADE_ANGLE) * 6, sayaBaseY + Math.sin(BLADE_ANGLE) * 6);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// 柄（つか）
+function drawTsuka() {
+  const tsukaEndX = BASE_X - Math.cos(BLADE_ANGLE) * TSUKA_LEN;
+  const tsukaEndY = BASE_Y - Math.sin(BLADE_ANGLE) * TSUKA_LEN;
+  const perpX = Math.cos(BLADE_ANGLE + Math.PI / 2);
+  const perpY = Math.sin(BLADE_ANGLE + Math.PI / 2);
+  const tw = 5.5 * Math.min(W, H) / 500;
+
+  ctx.save();
+  // 柄の本体（鮫皮＋糸巻き）
+  const tg = ctx.createLinearGradient(
+    BASE_X + perpX * tw, BASE_Y + perpY * tw,
+    BASE_X - perpX * tw, BASE_Y - perpY * tw
+  );
+  tg.addColorStop(0,   '#3a3028');
+  tg.addColorStop(0.4, '#504030');
+  tg.addColorStop(1,   '#282018');
+  ctx.strokeStyle = '#302818';
+  ctx.lineWidth = tw * 2;
+  ctx.lineCap = 'butt';
+  ctx.beginPath();
+  ctx.moveTo(BASE_X, BASE_Y);
+  ctx.lineTo(tsukaEndX, tsukaEndY);
+  ctx.stroke();
+
+  // 柄糸（ひし巻き）
+  ctx.lineWidth = 1.5;
+  const wraps = 8;
+  for (let i = 0; i < wraps; i++) {
+    const r = (i + 0.5) / wraps;
+    const wx = BASE_X + (tsukaEndX - BASE_X) * r;
+    const wy = BASE_Y + (tsukaEndY - BASE_Y) * r;
+    ctx.strokeStyle = i % 2 === 0 ? '#5a4530' : '#4a3825';
+    ctx.beginPath();
+    ctx.moveTo(wx + perpX * tw, wy + perpY * tw);
+    ctx.lineTo(wx - perpX * tw, wy - perpY * tw);
+    ctx.stroke();
+  }
+
+  // 鍔（つば）
+  const tsuba_cx = BASE_X;
+  const tsuba_cy = BASE_Y;
+  const tsuba_rx = tw * 2.8;
+  const tsuba_ry = tw * 1.5;
+  const tsubaAngle = BLADE_ANGLE + Math.PI / 2;
+
+  ctx.save();
+  ctx.translate(tsuba_cx, tsuba_cy);
+  ctx.rotate(tsubaAngle);
+  // 鍔の本体（鉄）
+  const tubag = ctx.createRadialGradient(0, 0, 0, 0, 0, tsuba_rx);
+  tubag.addColorStop(0,   '#5a5050');
+  tubag.addColorStop(0.5, '#4a4040');
+  tubag.addColorStop(1,   '#2a2828');
+  ctx.fillStyle = tubag;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, tsuba_rx, tsuba_ry, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // 鍔の縁（金色）
+  ctx.strokeStyle = '#786040';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, tsuba_rx, tsuba_ry, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  // 透かし模様（簡略）
+  ctx.strokeStyle = 'rgba(120,100,60,0.5)';
+  ctx.lineWidth = 0.8;
+  for (let i = 0; i < 4; i++) {
+    const ta = (i / 4) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.arc(Math.cos(ta) * tsuba_rx * 0.55, Math.sin(ta) * tsuba_ry * 0.55, tsuba_rx * 0.18, 0, Math.PI * 2);
     ctx.stroke();
   }
   ctx.restore();
 
-  // 刀身
-  const exposedLen = bladeLength * drawProgress;
-  if (exposedLen < 5) return;
-
-  ctx.save();
-  ctx.translate(startX, startY);
-  ctx.rotate(angle);
-
-  // 刀身グラデーション
-  const bladeGrad = ctx.createLinearGradient(-4, -exposedLen, 4, 0);
-  bladeGrad.addColorStop(0, '#f0f4ff');
-  bladeGrad.addColorStop(0.2, '#d8dce8');
-  bladeGrad.addColorStop(0.5, '#c0c4d0');
-  bladeGrad.addColorStop(1, '#909098');
-
-  ctx.beginPath();
-  ctx.moveTo(-4, 0);
-  ctx.lineTo(-2, -exposedLen * 0.9);
-  ctx.lineTo(0, -exposedLen); // 切っ先
-  ctx.lineTo(2, -exposedLen * 0.9);
-  ctx.lineTo(4, 0);
-  ctx.closePath();
-  ctx.fillStyle = bladeGrad;
-  ctx.fill();
-
-  // 刃文（波紋）
-  ctx.strokeStyle = 'rgba(220,230,255,0.4)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  for (let y = 0; y > -exposedLen; y -= 8) {
-    const x = Math.sin(y * 0.3) * 1.5;
-    ctx.lineTo(x, y);
-  }
-  ctx.stroke();
-
-  // 鍔（つば）
-  ctx.fillStyle = '#5a4020';
-  ctx.beginPath();
-  ctx.ellipse(0, 0, 10, 6, 0, 0, Math.PI * 2);
-  ctx.fill();
-
   ctx.restore();
-
-  // 光の反射（抜き際の閃光）
-  if (drawProgress > 0.3 && drawProgress < 0.95) {
-    const flashX = startX + Math.cos(angle) * exposedLen * 0.7;
-    const flashY = startY + Math.sin(angle) * exposedLen * 0.7;
-    const flashG = ctx.createRadialGradient(flashX, flashY, 0, flashX, flashY, 40);
-    flashG.addColorStop(0, `rgba(200,220,255,${(1 - Math.abs(drawProgress - 0.6) / 0.35) * 0.5})`);
-    flashG.addColorStop(1, 'rgba(200,220,255,0)');
-    ctx.fillStyle = flashG;
-    ctx.fillRect(flashX - 40, flashY - 40, 80, 80);
-  }
 }
 
 function loop() {
   ctx.clearRect(0, 0, W, H);
   t++;
 
-  const bladeLen = Math.min(W, H) * 0.55;
-
-  // フェーズ: 0〜20 静止 → 20〜60 高速抜刀 → 60〜80 閃光 → 80〜 静止
+  // フェーズ管理
   let drawP = 0;
-  if (t < 20) { drawP = 0; }
-  else if (t < 60) { drawP = easeOutExpo((t - 20) / 40); }
-  else { drawP = 1; }
+  if (t < 25) drawP = 0;
+  else if (t < 65) drawP = easeOutExpo((t - 25) / 40);
+  else drawP = 1;
 
   // 閃光
-  if (t >= 58 && t < 65) flashAlpha = (t - 58) / 4;
-  else if (t >= 65 && t < 75) flashAlpha = Math.max(0, flashAlpha - 0.12);
+  if (t >= 63 && t < 68) flashAlpha = (t - 63) / 3;
+  else if (t >= 68 && t < 80) flashAlpha = Math.max(0, flashAlpha - 0.1);
 
-  if (flashAlpha > 0) {
-    ctx.fillStyle = `rgba(220,230,255,${flashAlpha})`;
+  // 環境光（暗い部屋）
+  ctx.fillStyle = '#06060a';
+  ctx.fillRect(0, 0, W, H);
+
+  // 抜刀前のわずかな光（鯉口を切る瞬間）
+  if (t > 18 && t < 30) {
+    const prepAlpha = (t - 18) / 12 * 0.15;
+    const prepG = ctx.createRadialGradient(BASE_X, BASE_Y, 0, BASE_X, BASE_Y, 60);
+    prepG.addColorStop(0, `rgba(200,210,255,${prepAlpha})`);
+    prepG.addColorStop(1, 'rgba(200,210,255,0)');
+    ctx.fillStyle = prepG;
     ctx.fillRect(0, 0, W, H);
   }
 
-  drawKatana(drawP, bladeLen);
+  drawSaya();
+  drawTsuka();
+  drawBlade(drawP);
 
-  // 残像の軌跡
-  if (t > 20 && t < 65) {
-    const progress2 = Math.max(0, drawP - 0.1);
-    const alpha = (1 - (t - 20) / 45) * 0.3;
-    if (alpha > 0) {
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      drawKatana(progress2, bladeLen);
-      ctx.restore();
-    }
+  // 閃光
+  if (flashAlpha > 0) {
+    ctx.fillStyle = `rgba(230,238,255,${flashAlpha})`;
+    ctx.fillRect(0, 0, W, H);
   }
 
-  if (t < 300) requestAnimationFrame(loop);
+  // 抜刀の軌跡（残像）
+  if (t > 25 && t < 68 && drawP > 0.1) {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, 0.18 - (t - 25) / 200);
+    drawBlade(Math.max(0, drawP - 0.12));
+    ctx.restore();
+  }
+
+  // 刀身の環境反射（抜いた後）
+  if (drawP > 0.9) {
+    const bladeGlow = ctx.createRadialGradient(
+      BASE_X + Math.cos(BLADE_ANGLE) * BLADE_LEN * 0.5,
+      BASE_Y + Math.sin(BLADE_ANGLE) * BLADE_LEN * 0.5,
+      0,
+      BASE_X + Math.cos(BLADE_ANGLE) * BLADE_LEN * 0.5,
+      BASE_Y + Math.sin(BLADE_ANGLE) * BLADE_LEN * 0.5,
+      BLADE_LEN * 0.3
+    );
+    bladeGlow.addColorStop(0,   `rgba(180,190,220,${(drawP - 0.9) / 0.1 * 0.12})`);
+    bladeGlow.addColorStop(1,   'rgba(180,190,220,0)');
+    ctx.fillStyle = bladeGlow;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  if (t < 320) requestAnimationFrame(loop);
 }
 loop();
 </script>
