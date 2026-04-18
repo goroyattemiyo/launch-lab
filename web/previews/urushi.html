@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Urushi</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #020102; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #e0a878; letter-spacing: 0.5em; opacity: 0; animation: fadeIn 1.5s 2s forwards; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">漆　Urushi</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+const cx = W / 2, cy = H / 2;
+let t = 0;
+
+function easeInOutCubic(x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
+
+function drawUrushi(progress) {
+  // 漆黒の広がり（中央から）
+  const r = Math.max(W, H) * 0.8 * progress;
+
+  // 下層：深い赤黒
+  const g1 = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+  g1.addColorStop(0, `rgba(25,4,4,${progress})`);
+  g1.addColorStop(0.5, `rgba(18,3,3,${progress})`);
+  g1.addColorStop(1, 'rgba(10,1,1,0)');
+  ctx.fillStyle = g1;
+  ctx.fillRect(0, 0, W, H);
+
+  // ツヤの光（斜め上からの反射）
+  if (progress > 0.2) {
+    const glossP = (progress - 0.2) / 0.8;
+    const glossX = cx - W * 0.15;
+    const glossY = cy - H * 0.3;
+    const g2 = ctx.createRadialGradient(glossX, glossY, 0, glossX, glossY, r * 0.5);
+    g2.addColorStop(0, `rgba(180,60,40,${glossP * 0.18})`);
+    g2.addColorStop(0.3, `rgba(120,30,20,${glossP * 0.1})`);
+    g2.addColorStop(1, 'rgba(80,10,10,0)');
+    ctx.fillStyle = g2;
+    ctx.fillRect(0, 0, W, H);
+
+    // 細い光の筋（漆器の光沢特有）
+    ctx.save();
+    ctx.globalAlpha = glossP * 0.12;
+    ctx.strokeStyle = 'rgba(220,100,60,1)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 3; i++) {
+      const lx = cx + (Math.cos(Math.PI * 0.7 + i * 0.3) * W * 0.3);
+      const ly = cy + (Math.sin(Math.PI * 0.7 + i * 0.3) * H * 0.3);
+      ctx.beginPath();
+      ctx.moveTo(lx - W * 0.2, ly - H * 0.1);
+      ctx.quadraticCurveTo(cx, cy * 0.6, lx + W * 0.2, ly + H * 0.1);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // 縁の深紅（磁器の縁のような発光）
+  if (progress > 0.5) {
+    const edgeP = (progress - 0.5) / 0.5;
+    const edgeR = r * 0.92;
+    const g3 = ctx.createRadialGradient(cx, cy, edgeR * 0.85, cx, cy, edgeR);
+    g3.addColorStop(0, 'rgba(140,20,10,0)');
+    g3.addColorStop(0.7, `rgba(160,30,15,${edgeP * 0.15})`);
+    g3.addColorStop(1, 'rgba(80,10,5,0)');
+    ctx.fillStyle = g3;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  // 表面の微細な揺らぎ（漆の液体感）
+  if (progress > 0.3 && progress < 0.9) {
+    ctx.save();
+    ctx.globalAlpha = 0.04 * ((progress - 0.3) / 0.6);
+    for (let i = 0; i < 6; i++) {
+      const wa = (i / 6) * Math.PI * 2 + t * 0.008;
+      const wr = r * (0.3 + i * 0.1);
+      ctx.strokeStyle = 'rgba(180,50,30,1)';
+      ctx.lineWidth = 8;
+      ctx.beginPath();
+      ctx.arc(cx, cy, wr, wa, wa + Math.PI * 0.4);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  const progress = Math.min(1, easeInOutCubic(Math.min(1, t / 150)));
+  drawUrushi(progress);
+
+  if (t < 400) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

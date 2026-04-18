@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Temple Bell</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #08080a; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #c8b880; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 1.5s 0.5s forwards; margin-top: 140px; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">Temple Bell</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+const cx = W/2, cy = H * 0.38;
+let t = 0;
+const ripples = [];
+const strikes = [0, 90, 165];
+
+function addRipple() {
+  ripples.push({ r: 5, alpha: 0.7, speed: 1.8 });
+}
+
+function drawBell(swingAngle) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(swingAngle);
+
+  const bw = Math.min(W * 0.12, 60);
+  const bh = bw * 1.5;
+
+  // 吊り紐
+  ctx.strokeStyle = '#5a4830';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(0, -bh * 0.6);
+  ctx.lineTo(0, -bh * 1.2);
+  ctx.stroke();
+
+  // 梵鐘の形（逆台形ベース）
+  const bellGrad = ctx.createLinearGradient(-bw, 0, bw, 0);
+  bellGrad.addColorStop(0, '#2a2618');
+  bellGrad.addColorStop(0.25, '#4a4430');
+  bellGrad.addColorStop(0.5, '#6a6040');
+  bellGrad.addColorStop(0.75, '#4a4430');
+  bellGrad.addColorStop(1, '#2a2618');
+  ctx.fillStyle = bellGrad;
+
+  ctx.beginPath();
+  ctx.moveTo(-bw * 0.4, -bh * 0.6);  // 上辺左
+  ctx.lineTo(bw * 0.4, -bh * 0.6);   // 上辺右
+  ctx.quadraticCurveTo(bw * 0.55, 0, bw * 0.45, bh * 0.4);
+  ctx.quadraticCurveTo(bw * 0.2, bh * 0.55, 0, bh * 0.55);
+  ctx.quadraticCurveTo(-bw * 0.2, bh * 0.55, -bw * 0.45, bh * 0.4);
+  ctx.quadraticCurveTo(-bw * 0.55, 0, -bw * 0.4, -bh * 0.6);
+  ctx.closePath();
+  ctx.fill();
+
+  // 鐘の縁飾り
+  ctx.strokeStyle = '#8a7840';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(-bw * 0.45, bh * 0.35);
+  ctx.quadraticCurveTo(0, bh * 0.5, bw * 0.45, bh * 0.35);
+  ctx.stroke();
+
+  // 撞座（打つ場所）
+  ctx.fillStyle = '#9a8840';
+  ctx.beginPath();
+  ctx.arc(0, bh * 0.08, bw * 0.12, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  // ストライクタイミング
+  strikes.forEach(s => {
+    if (t === s) addRipple();
+  });
+
+  // 揺れ
+  const strikeT = strikes.reduce((closest, s) => {
+    return Math.abs(t - s) < Math.abs(t - closest) ? s : closest;
+  }, Infinity);
+  const dt = t - strikeT;
+  const swing = dt >= 0 && dt < 80
+    ? Math.sin(dt * 0.2) * Math.exp(-dt * 0.04) * 0.15
+    : 0;
+
+  drawBell(swing);
+
+  // 波紋
+  ripples.forEach((r, i) => {
+    r.r += r.speed;
+    r.speed *= 0.995;
+    r.alpha -= 0.006;
+
+    if (r.alpha <= 0 || r.r > Math.min(W, H) * 0.55) {
+      ripples.splice(i, 1);
+      return;
+    }
+
+    // 楕円波紋
+    ctx.save();
+    ctx.strokeStyle = `rgba(200,180,100,${r.alpha})`;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + Math.min(W * 0.12, 60) * 0.6, r.r, r.r * 0.5, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // 薄い外側リング
+    ctx.save();
+    ctx.strokeStyle = `rgba(200,180,100,${r.alpha * 0.3})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + Math.min(W * 0.12, 60) * 0.6, r.r * 1.15, r.r * 0.55, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  if (t < 400) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

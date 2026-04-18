@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sumi Bloom</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(18px, 4vw, 28px); color: #e8e0d0; letter-spacing: 0.3em; opacity: 0; animation: fadeIn 1s 2s forwards; text-shadow: 0 0 20px rgba(20,10,0,0.8); }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">Sumi Bloom</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+const cx = W/2, cy = H/2;
+const drops = [];
+let t = 0;
+
+function addDrop(x, y, r, alpha) {
+  drops.push({ x, y, r, maxR: r, alpha, speed: 0.4 + Math.random() * 0.6 });
+}
+
+addDrop(cx, cy, 0, 1);
+setTimeout(() => addDrop(cx - 30, cy + 20, 0, 0.7), 200);
+setTimeout(() => addDrop(cx + 40, cy - 15, 0, 0.6), 400);
+setTimeout(() => addDrop(cx - 20, cy - 35, 0, 0.5), 600);
+setTimeout(() => addDrop(cx + 15, cy + 40, 0, 0.4), 800);
+
+function drawInk(x, y, r, alpha) {
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, `rgba(8,6,4,${alpha})`);
+  g.addColorStop(0.4, `rgba(15,12,8,${alpha * 0.8})`);
+  g.addColorStop(0.75, `rgba(20,16,10,${alpha * 0.4})`);
+  g.addColorStop(1, `rgba(10,8,5,0)`);
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  drops.forEach(d => {
+    if (d.r < 180) d.r += d.speed * (1 - d.r / 200);
+    else d.r += 0.05;
+    drawInk(d.x, d.y, d.r * 1.5, d.alpha * (1 - d.r / 200));
+  });
+
+  // 繊維のような筋
+  if (t < 120) {
+    ctx.save();
+    ctx.strokeStyle = `rgba(5,4,2,${0.3 * (1 - t/120)})`;
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i < 6; i++) {
+      const angle = (i / 6) * Math.PI * 2 + t * 0.01;
+      const len = t * 0.8;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.quadraticCurveTo(
+        cx + Math.cos(angle + 0.3) * len * 0.5,
+        cy + Math.sin(angle + 0.3) * len * 0.5,
+        cx + Math.cos(angle) * len,
+        cy + Math.sin(angle) * len
+      );
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  if (t < 300) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ai Dye</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f0e8d8; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #f0e8d8; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 1.2s 2.2s forwards; mix-blend-mode: difference; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">藍　Ai Dye</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+const cx = W / 2, cy = H / 2;
+let t = 0;
+
+// 藍染めの染み広がりを複数の楕円で表現
+const blobs = [
+  { x: cx, y: cy, rx: 0, ry: 0, maxRx: W * 0.55, maxRy: H * 0.55, delay: 0, speed: 0.012 },
+  { x: cx * 0.4, y: cy * 0.5, rx: 0, ry: 0, maxRx: W * 0.3, maxRy: H * 0.28, delay: 0.15, speed: 0.01 },
+  { x: cx * 1.6, y: cy * 1.4, rx: 0, ry: 0, maxRx: W * 0.25, maxRy: H * 0.22, delay: 0.2, speed: 0.009 },
+  { x: cx * 0.6, y: cy * 1.5, rx: 0, ry: 0, maxRx: W * 0.22, maxRy: H * 0.2, delay: 0.3, speed: 0.011 },
+  { x: cx * 1.5, y: cy * 0.5, rx: 0, ry: 0, maxRx: W * 0.28, maxRy: H * 0.24, delay: 0.25, speed: 0.01 },
+];
+
+function easeOutSine(x) { return Math.sin((x * Math.PI) / 2); }
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  const progress = Math.min(1, t / 160);
+
+  // 布（和紙）の背景
+  ctx.fillStyle = '#f0e8d8';
+  ctx.fillRect(0, 0, W, H);
+
+  // 布目のテクスチャ（薄い格子）
+  ctx.save();
+  ctx.globalAlpha = 0.04;
+  ctx.strokeStyle = '#a09080';
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x < W; x += 8) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = 0; y < H; y += 8) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+  ctx.restore();
+
+  // 藍染めの滲み（複数レイヤーで深みを出す）
+  blobs.forEach(b => {
+    const p = Math.max(0, Math.min(1, (progress - b.delay) / (1 - b.delay)));
+    const ep = easeOutSine(p);
+    b.rx = b.maxRx * ep;
+    b.ry = b.maxRy * ep;
+    if (b.rx <= 0) return;
+
+    // 複数の濃度レイヤー
+    for (let layer = 3; layer >= 0; layer--) {
+      const layerScale = 0.4 + layer * 0.2;
+      const indigoH = 225 + layer * 5;
+      const indigoS = 60 + layer * 8;
+      const indigoL = 15 + layer * 5;
+      const alpha = (0.15 + layer * 0.08) * ep;
+
+      const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.rx * layerScale);
+      g.addColorStop(0, `hsla(${indigoH},${indigoS}%,${indigoL}%,${alpha})`);
+      g.addColorStop(0.6, `hsla(${indigoH},${indigoS - 10}%,${indigoL + 5}%,${alpha * 0.7})`);
+      g.addColorStop(1, `hsla(${indigoH},${indigoS}%,${indigoL}%,0)`);
+
+      ctx.save();
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(b.x, b.y, b.rx * layerScale, b.ry * layerScale, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // エッジの滲み（水が広がる際の不規則な輪郭）
+    if (ep > 0.1) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.strokeStyle = `hsla(225,55%,22%,${ep * 0.25})`;
+      ctx.lineWidth = 3;
+      ctx.setLineDash([4, 8]);
+      ctx.lineDashOffset = t * 0.5;
+      ctx.beginPath();
+      ctx.ellipse(b.x, b.y, b.rx * 0.95, b.ry * 0.95, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  });
+
+  if (t < 400) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

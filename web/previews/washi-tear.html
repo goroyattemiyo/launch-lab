@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Washi Tear</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0806; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(18px, 4vw, 28px); color: #1a1408; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 0.6s 2s forwards; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">Washi Tear</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+const cx = W / 2, cy = H / 2;
+let t = 0;
+
+// 破れ口の輪郭（不規則なポリゴン）
+const tearPoints = [];
+const COUNT = 32;
+for (let i = 0; i < COUNT; i++) {
+  const angle = (i / COUNT) * Math.PI * 2;
+  const base = Math.min(W, H) * 0.25;
+  const jitter = base * (0.6 + Math.random() * 0.5);
+  tearPoints.push({
+    angle,
+    r: jitter,
+    fiber: Math.random() < 0.3, // 繊維が出る頂点
+  });
+}
+
+function getTearRadius(progress) {
+  return Math.min(W, H) * 0.28 * Math.min(1, progress * 1.8);
+}
+
+function drawWashi(tearProgress) {
+  const tearR = getTearRadius(tearProgress);
+
+  ctx.save();
+
+  // 和紙全体
+  const paperGrad = ctx.createRadialGradient(cx * 0.9, cy * 0.8, 0, cx, cy, Math.max(W, H) * 0.7);
+  paperGrad.addColorStop(0, '#f5ecd8');
+  paperGrad.addColorStop(0.4, '#ede0c8');
+  paperGrad.addColorStop(1, '#d8cdb0');
+  ctx.fillStyle = paperGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // 和紙テクスチャ（繊維風の薄い線）
+  ctx.globalAlpha = 0.06;
+  for (let i = 0; i < 60; i++) {
+    const x1 = Math.random() * W, y1 = Math.random() * H;
+    const len = 20 + Math.random() * 60;
+    const angle = Math.random() * Math.PI;
+    ctx.strokeStyle = '#8a7858';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x1 + Math.cos(angle) * len, y1 + Math.sin(angle) * len);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+
+  // 破れ口をクリップ（和紙を外側だけ表示）
+  ctx.beginPath();
+  ctx.rect(0, 0, W, H);
+  // 破れ口の形（内側を切り抜く）
+  ctx.moveTo(cx + tearPoints[0].r * tearProgress * Math.cos(tearPoints[0].angle), cy + tearPoints[0].r * tearProgress * Math.sin(tearPoints[0].angle));
+  for (let i = 1; i <= COUNT; i++) {
+    const pt = tearPoints[i % COUNT];
+    ctx.lineTo(cx + pt.r * tearProgress * Math.cos(pt.angle), cy + pt.r * tearProgress * Math.sin(pt.angle));
+  }
+  ctx.closePath();
+  ctx.clip('evenodd');
+
+  // 和紙（クリップ後に再描画）
+  ctx.fillStyle = paperGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // 破れ口のエッジ（繊維のけばだち）
+  ctx.restore();
+  ctx.save();
+  ctx.strokeStyle = 'rgba(180,160,120,0.6)';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < COUNT; i++) {
+    const pt = tearPoints[i];
+    const ex = cx + pt.r * tearProgress * Math.cos(pt.angle);
+    const ey = cy + pt.r * tearProgress * Math.sin(pt.angle);
+    if (pt.fiber && tearProgress > 0.3) {
+      ctx.beginPath();
+      ctx.moveTo(ex, ey);
+      const fAngle = pt.angle + (Math.random() - 0.5) * 0.5;
+      const fLen = 8 + Math.random() * 12;
+      ctx.lineTo(ex + Math.cos(fAngle) * fLen, ey + Math.sin(fAngle) * fLen);
+      ctx.stroke();
+    }
+  }
+
+  // 破れ口の影（内側に深みを出す）
+  const shadowR = tearR * 0.9;
+  const sg = ctx.createRadialGradient(cx, cy, shadowR * 0.5, cx, cy, shadowR * 1.2);
+  sg.addColorStop(0, 'rgba(0,0,0,0)');
+  sg.addColorStop(0.7, 'rgba(0,0,0,0)');
+  sg.addColorStop(1, `rgba(0,0,0,${tearProgress * 0.3})`);
+  ctx.fillStyle = sg;
+  ctx.beginPath();
+  for (let i = 0; i < COUNT; i++) {
+    const pt = tearPoints[i];
+    const x = cx + pt.r * tearProgress * Math.cos(pt.angle);
+    const y = cy + pt.r * tearProgress * Math.sin(pt.angle);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function easeOutBack(x) {
+  const c1 = 1.70158, c3 = c1 + 1;
+  return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  let tearP = 0;
+  if (t < 30) tearP = 0;
+  else if (t < 120) tearP = easeOutBack(Math.min(1, (t - 30) / 90));
+  else tearP = 1;
+
+  drawWashi(tearP);
+
+  if (t < 350) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

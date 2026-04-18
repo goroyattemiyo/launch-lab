@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chazen</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #050805; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #c0e888; letter-spacing: 0.5em; opacity: 0; animation: fadeIn 1s 2.5s forwards; margin-top: 150px; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">茶禅　Chazen</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+const cx = W / 2, cy = H / 2 - 10;
+let t = 0;
+
+const BOWL_RX = Math.min(W * 0.2, 100);
+const BOWL_RY = BOWL_RX * 0.32;
+
+const ripples = [];
+const foam = [];
+
+function addRipple() {
+  const offX = (Math.random() - 0.5) * BOWL_RX * 0.5;
+  const offY = (Math.random() - 0.5) * BOWL_RY * 0.3;
+  ripples.push({ x: cx + offX, y: cy + offY, r: 3, alpha: 0.6, speed: 1.2 + Math.random() * 0.8 });
+}
+
+function makeFoam(x, y) {
+  foam.push({
+    x, y,
+    r: 1.5 + Math.random() * 3,
+    alpha: 0.5 + Math.random() * 0.4,
+    life: 0,
+    maxLife: 80 + Math.random() * 60,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: (Math.random() - 0.5) * 0.2,
+  });
+}
+
+function drawBowl() {
+  ctx.save();
+  // 茶碗外形
+  const bg = ctx.createLinearGradient(cx - BOWL_RX, cy, cx + BOWL_RX, cy);
+  bg.addColorStop(0, '#2a1e12');
+  bg.addColorStop(0.3, '#3a2a18');
+  bg.addColorStop(0.7, '#3a2a18');
+  bg.addColorStop(1, '#2a1e12');
+  ctx.fillStyle = bg;
+
+  // 碗の本体
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + BOWL_RX * 0.7, BOWL_RX * 1.05, BOWL_RY * 1.05, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillRect(cx - BOWL_RX * 1.05, cy, BOWL_RX * 2.1, BOWL_RX * 0.7);
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, BOWL_RX * 1.05, BOWL_RY * 1.05, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 碗の内側（抹茶の液面）
+  const mg = ctx.createRadialGradient(cx - BOWL_RX * 0.2, cy - BOWL_RY * 0.1, 0, cx, cy, BOWL_RX);
+  mg.addColorStop(0, '#78c840');
+  mg.addColorStop(0.4, '#58a030');
+  mg.addColorStop(1, '#408028');
+  ctx.fillStyle = mg;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, BOWL_RX, BOWL_RY, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+// 茶筅の描画
+function drawChasen(x, y, speed) {
+  ctx.save();
+  ctx.translate(x, y);
+  const h = Math.min(W, H) * 0.18;
+
+  // 穂（竹の細い束）
+  const whisks = 16;
+  ctx.strokeStyle = '#c8b060';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < whisks; i++) {
+    const angle = (i / whisks) * Math.PI * 2;
+    const wobble = Math.sin(t * 0.3 + i * 0.5) * speed * 4;
+    const r = 6;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(angle) * r * 0.3, 0);
+    ctx.quadraticCurveTo(
+      Math.cos(angle) * r + wobble, -h * 0.5,
+      Math.cos(angle) * r * 1.2 + wobble * 1.5, -h
+    );
+    ctx.stroke();
+  }
+
+  // 柄
+  ctx.fillStyle = '#a08848';
+  ctx.fillRect(-3, -h * 0.1, 6, h * 0.5);
+  ctx.beginPath();
+  ctx.arc(0, -h * 0.1, 8, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  drawBowl();
+
+  // 茶筅の動き（円を描く）
+  const whisking = t < 180;
+  const chasenSpeed = whisking ? 1 : 0;
+  const chasenAngle = t * 0.18;
+  const chasenR = BOWL_RX * 0.3;
+  const chasenX = cx + Math.cos(chasenAngle) * chasenR;
+  const chasenY = cy + Math.sin(chasenAngle) * chasenR * 0.4 - BOWL_RY * 0.3;
+
+  // 波紋生成
+  if (whisking && t % 5 === 0) addRipple();
+
+  // 泡生成
+  if (whisking && t % 3 === 0) {
+    makeFoam(cx + (Math.random() - 0.5) * BOWL_RX * 1.4, cy + (Math.random() - 0.5) * BOWL_RY * 0.8);
+  }
+
+  // 波紋描画
+  ripples.forEach((r, i) => {
+    r.r += r.speed;
+    r.alpha -= 0.018;
+    if (r.alpha <= 0 || r.r > BOWL_RX * 1.1) { ripples.splice(i, 1); return; }
+    ctx.save();
+    ctx.strokeStyle = `rgba(160,240,100,${r.alpha})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(r.x, r.y, r.r, r.r * 0.35, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  // 泡描画
+  foam.forEach((f, i) => {
+    f.life++;
+    f.x += f.vx;
+    f.y += f.vy;
+    f.alpha -= 0.006;
+    if (f.life > f.maxLife || f.alpha <= 0) { foam.splice(i, 1); return; }
+
+    ctx.save();
+    ctx.strokeStyle = `rgba(200,255,160,${f.alpha * 0.8})`;
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = `rgba(180,240,120,${f.alpha * 0.15})`;
+    ctx.fill();
+    ctx.restore();
+  });
+
+  if (whisking) drawChasen(chasenX, chasenY, chasenSpeed);
+
+  if (t < 400) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

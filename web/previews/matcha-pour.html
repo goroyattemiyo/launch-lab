@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matcha Pour</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #060a06; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #b8d890; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 1s 2.5s forwards; margin-top: 160px; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">Matcha Pour</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+const cx = W / 2, cy = H / 2 - 20;
+let t = 0;
+const bubbles = [];
+
+const BOWL_RX = Math.min(W * 0.18, 90);
+const BOWL_RY = BOWL_RX * 0.35;
+const BOWL_TOP = cy - BOWL_RY * 0.5;
+
+function makeBubble(x, y) {
+  bubbles.push({
+    x: x + (Math.random() - 0.5) * BOWL_RX * 1.2,
+    y,
+    r: 1.5 + Math.random() * 3.5,
+    vy: -(0.1 + Math.random() * 0.3),
+    alpha: 0.4 + Math.random() * 0.4,
+    life: 0,
+    maxLife: 60 + Math.random() * 60,
+  });
+}
+
+function drawBowl() {
+  // 茶碗（外形）
+  ctx.save();
+  const bowlGrad = ctx.createRadialGradient(cx - BOWL_RX * 0.3, BOWL_TOP - BOWL_RX * 0.2, 0, cx, BOWL_TOP, BOWL_RX * 1.2);
+  bowlGrad.addColorStop(0, '#4a3828');
+  bowlGrad.addColorStop(0.4, '#382818');
+  bowlGrad.addColorStop(1, '#1e1408');
+  ctx.fillStyle = bowlGrad;
+
+  ctx.beginPath();
+  ctx.ellipse(cx, BOWL_TOP + BOWL_RX * 0.9, BOWL_RX * 1.1, BOWL_RY * 1.1, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(cx, BOWL_TOP, BOWL_RX * 1.1, BOWL_RY * 1.1, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // 側面
+  ctx.fillRect(cx - BOWL_RX * 1.1, BOWL_TOP, BOWL_RX * 2.2, BOWL_RX * 0.9);
+
+  ctx.restore();
+}
+
+function drawMatcha(fillLevel) {
+  if (fillLevel <= 0) return;
+  const liquidY = BOWL_TOP + BOWL_RY * 0.3 + (1 - fillLevel) * BOWL_RX * 0.5;
+  const liquidRX = BOWL_RX * 0.95 * Math.min(fillLevel * 1.5, 1);
+
+  ctx.save();
+  // 抹茶の液面
+  const mg = ctx.createRadialGradient(cx, liquidY, 0, cx, liquidY, liquidRX);
+  mg.addColorStop(0, '#6ab840');
+  mg.addColorStop(0.5, '#4a9030');
+  mg.addColorStop(1, '#3a7828');
+  ctx.fillStyle = mg;
+  ctx.beginPath();
+  ctx.ellipse(cx, liquidY, liquidRX, BOWL_RY * 0.8, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 注ぎ込み部分の波紋
+  if (fillLevel < 0.9) {
+    const waveR = BOWL_RX * 0.15 * fillLevel;
+    ctx.strokeStyle = `rgba(180,255,120,${0.4 * fillLevel})`;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.ellipse(cx, liquidY - BOWL_RY * 0.1, waveR, waveR * 0.4, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawStream(fillLevel) {
+  if (fillLevel >= 1) return;
+  const streamX = cx + BOWL_RX * 0.1;
+  const streamTopY = cy - BOWL_RX * 2.0;
+  const streamBotY = BOWL_TOP + BOWL_RY * 0.3 + (1 - fillLevel) * BOWL_RX * 0.5 - BOWL_RY * 0.1;
+
+  ctx.save();
+  const streamW = 4 * (1 - fillLevel * 0.5);
+  const sg = ctx.createLinearGradient(streamX, streamTopY, streamX, streamBotY);
+  sg.addColorStop(0, 'rgba(100,200,60,0.9)');
+  sg.addColorStop(1, 'rgba(80,170,50,0.6)');
+  ctx.fillStyle = sg;
+  ctx.beginPath();
+  ctx.moveTo(streamX - streamW, streamTopY);
+  ctx.quadraticCurveTo(streamX - streamW * 0.5 + Math.sin(t * 0.1) * 2, (streamTopY + streamBotY) / 2, streamX - streamW * 0.3, streamBotY);
+  ctx.lineTo(streamX + streamW * 0.3, streamBotY);
+  ctx.quadraticCurveTo(streamX + streamW * 0.5 + Math.sin(t * 0.1) * 2, (streamTopY + streamBotY) / 2, streamX + streamW, streamTopY);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  let fillLevel = 0;
+  if (t < 20) fillLevel = 0;
+  else if (t < 130) fillLevel = Math.min(1, (t - 20) / 110);
+  else fillLevel = 1;
+
+  drawBowl();
+  drawMatcha(fillLevel);
+  drawStream(fillLevel);
+
+  // 泡生成
+  if (t > 30 && t < 200 && t % 4 === 0) {
+    const liquidY = BOWL_TOP + BOWL_RY * 0.3 + (1 - Math.min(fillLevel, 1)) * BOWL_RX * 0.5;
+    makeBubble(cx, liquidY - BOWL_RY * 0.3);
+  }
+
+  // 泡描画
+  bubbles.forEach((b, i) => {
+    b.life++;
+    b.y += b.vy;
+    b.alpha -= 0.008;
+    if (b.life > b.maxLife || b.alpha <= 0) { bubbles.splice(i, 1); return; }
+
+    ctx.save();
+    ctx.strokeStyle = `rgba(180,255,130,${b.alpha * 0.7})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = `rgba(160,240,100,${b.alpha * 0.2})`;
+    ctx.fill();
+    ctx.restore();
+  });
+
+  if (t < 400) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

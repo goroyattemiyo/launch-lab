@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Katana Draw</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #060608; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #e8e0d8; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 0.5s 1.8s forwards; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">Katana Draw</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+let t = 0;
+let flashAlpha = 0;
+
+function easeOutExpo(x) { return x === 1 ? 1 : 1 - Math.pow(2, -10 * x); }
+
+function drawKatana(drawProgress, bladeLength) {
+  const angle = -Math.PI / 4; // 45度
+  const startX = W * 0.65;
+  const startY = H * 0.65;
+
+  // 鞘（さや）
+  ctx.save();
+  ctx.translate(startX, startY);
+  ctx.rotate(angle);
+  const sayaLen = bladeLength * 0.85;
+  ctx.fillStyle = '#1a1208';
+  ctx.fillRect(-8, -sayaLen, 16, sayaLen);
+  // 鞘の装飾
+  ctx.strokeStyle = '#3a2810';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 5; i++) {
+    const y = -sayaLen * (i + 1) / 6;
+    ctx.beginPath();
+    ctx.moveTo(-8, y);
+    ctx.lineTo(8, y);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // 刀身
+  const exposedLen = bladeLength * drawProgress;
+  if (exposedLen < 5) return;
+
+  ctx.save();
+  ctx.translate(startX, startY);
+  ctx.rotate(angle);
+
+  // 刀身グラデーション
+  const bladeGrad = ctx.createLinearGradient(-4, -exposedLen, 4, 0);
+  bladeGrad.addColorStop(0, '#f0f4ff');
+  bladeGrad.addColorStop(0.2, '#d8dce8');
+  bladeGrad.addColorStop(0.5, '#c0c4d0');
+  bladeGrad.addColorStop(1, '#909098');
+
+  ctx.beginPath();
+  ctx.moveTo(-4, 0);
+  ctx.lineTo(-2, -exposedLen * 0.9);
+  ctx.lineTo(0, -exposedLen); // 切っ先
+  ctx.lineTo(2, -exposedLen * 0.9);
+  ctx.lineTo(4, 0);
+  ctx.closePath();
+  ctx.fillStyle = bladeGrad;
+  ctx.fill();
+
+  // 刃文（波紋）
+  ctx.strokeStyle = 'rgba(220,230,255,0.4)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let y = 0; y > -exposedLen; y -= 8) {
+    const x = Math.sin(y * 0.3) * 1.5;
+    ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // 鍔（つば）
+  ctx.fillStyle = '#5a4020';
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 10, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+
+  // 光の反射（抜き際の閃光）
+  if (drawProgress > 0.3 && drawProgress < 0.95) {
+    const flashX = startX + Math.cos(angle) * exposedLen * 0.7;
+    const flashY = startY + Math.sin(angle) * exposedLen * 0.7;
+    const flashG = ctx.createRadialGradient(flashX, flashY, 0, flashX, flashY, 40);
+    flashG.addColorStop(0, `rgba(200,220,255,${(1 - Math.abs(drawProgress - 0.6) / 0.35) * 0.5})`);
+    flashG.addColorStop(1, 'rgba(200,220,255,0)');
+    ctx.fillStyle = flashG;
+    ctx.fillRect(flashX - 40, flashY - 40, 80, 80);
+  }
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  const bladeLen = Math.min(W, H) * 0.55;
+
+  // フェーズ: 0〜20 静止 → 20〜60 高速抜刀 → 60〜80 閃光 → 80〜 静止
+  let drawP = 0;
+  if (t < 20) { drawP = 0; }
+  else if (t < 60) { drawP = easeOutExpo((t - 20) / 40); }
+  else { drawP = 1; }
+
+  // 閃光
+  if (t >= 58 && t < 65) flashAlpha = (t - 58) / 4;
+  else if (t >= 65 && t < 75) flashAlpha = Math.max(0, flashAlpha - 0.12);
+
+  if (flashAlpha > 0) {
+    ctx.fillStyle = `rgba(220,230,255,${flashAlpha})`;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  drawKatana(drawP, bladeLen);
+
+  // 残像の軌跡
+  if (t > 20 && t < 65) {
+    const progress2 = Math.max(0, drawP - 0.1);
+    const alpha = (1 - (t - 20) / 45) * 0.3;
+    if (alpha > 0) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      drawKatana(progress2, bladeLen);
+      ctx.restore();
+    }
+  }
+
+  if (t < 300) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

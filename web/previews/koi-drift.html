@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Koi Drift</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #060d12; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #d4a840; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 1s 2.5s forwards; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">Koi Drift</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+let t = 0;
+
+// 水面の波紋
+const ripples = [];
+
+function addRipple(x, y) {
+  ripples.push({ x, y, r: 0, alpha: 0.3 });
+}
+
+// 鯉の描画
+function drawKoi(x, y, angle, scale, alpha) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.scale(scale, scale);
+  ctx.globalAlpha = alpha;
+
+  const len = 60;
+
+  // 尾ひれ
+  ctx.fillStyle = '#c8841a';
+  ctx.beginPath();
+  ctx.moveTo(-len * 0.5, 0);
+  ctx.quadraticCurveTo(-len * 0.85, -len * 0.35, -len * 1.1, -len * 0.15);
+  ctx.quadraticCurveTo(-len * 0.9, 0, -len * 1.1, len * 0.15);
+  ctx.quadraticCurveTo(-len * 0.85, len * 0.35, -len * 0.5, 0);
+  ctx.fill();
+
+  // 胴体
+  const bodyGrad = ctx.createLinearGradient(-len * 0.5, -len * 0.2, len * 0.5, len * 0.2);
+  bodyGrad.addColorStop(0, '#e8a020');
+  bodyGrad.addColorStop(0.4, '#f0c040');
+  bodyGrad.addColorStop(0.7, '#e09018');
+  bodyGrad.addColorStop(1, '#c07010');
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, len * 0.55, len * 0.22, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 白斑
+  ctx.fillStyle = 'rgba(255,245,220,0.5)';
+  ctx.beginPath();
+  ctx.ellipse(len * 0.1, -len * 0.05, len * 0.15, len * 0.1, 0.3, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 目
+  ctx.fillStyle = '#1a0a00';
+  ctx.beginPath();
+  ctx.arc(len * 0.42, -len * 0.06, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,220,100,0.8)';
+  ctx.beginPath();
+  ctx.arc(len * 0.42, -len * 0.06, 1.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 背びれ
+  ctx.fillStyle = 'rgba(200,130,20,0.7)';
+  ctx.beginPath();
+  ctx.moveTo(len * 0.1, -len * 0.2);
+  ctx.quadraticCurveTo(len * 0.0, -len * 0.42, -len * 0.2, -len * 0.22);
+  ctx.quadraticCurveTo(-len * 0.05, -len * 0.22, len * 0.1, -len * 0.2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawWater(alpha) {
+  const g = ctx.createLinearGradient(0, H * 0.3, 0, H);
+  g.addColorStop(0, `rgba(8,20,35,${alpha})`);
+  g.addColorStop(1, `rgba(4,12,22,${alpha})`);
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+}
+
+// 鯉のパス
+function koiPos(time) {
+  const speed = 0.012;
+  const angle = time * speed;
+  const rx = W * 0.28, ry = H * 0.22;
+  return {
+    x: W/2 + Math.cos(angle) * rx,
+    y: H/2 + Math.sin(angle * 0.7) * ry,
+    dir: Math.atan2(
+      -Math.sin(angle * 0.7) * ry * 0.7,
+      -Math.sin(angle) * rx
+    ) + Math.PI
+  };
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  const fadeIn = Math.min(1, t / 60);
+  drawWater(fadeIn);
+
+  // 水面の輝き
+  ctx.save();
+  ctx.globalAlpha = 0.06 * fadeIn;
+  for (let i = 0; i < 5; i++) {
+    const wx = W * 0.1 + W * 0.8 * (i / 4);
+    const wy = H * 0.4 + Math.sin(t * 0.02 + i) * H * 0.1;
+    const wg = ctx.createRadialGradient(wx, wy, 0, wx, wy, W * 0.2);
+    wg.addColorStop(0, 'rgba(150,200,255,0.4)');
+    wg.addColorStop(1, 'rgba(150,200,255,0)');
+    ctx.fillStyle = wg;
+    ctx.fillRect(0, 0, W, H);
+  }
+  ctx.restore();
+
+  // 波紋の更新
+  if (t % 40 === 0) {
+    const p = koiPos(t);
+    addRipple(p.x, p.y);
+  }
+  ripples.forEach((r, i) => {
+    r.r += 1.5;
+    r.alpha -= 0.005;
+    if (r.alpha > 0) {
+      ctx.save();
+      ctx.strokeStyle = `rgba(180,160,100,${r.alpha * fadeIn})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.ellipse(r.x, r.y, r.r, r.r * 0.4, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  });
+
+  const p = koiPos(t);
+  const waveOffset = Math.sin(t * 0.08) * 0.15;
+  drawKoi(p.x, p.y, p.dir + waveOffset, Math.min(1, t / 60), fadeIn);
+
+  if (t < 400) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

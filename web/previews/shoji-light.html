@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shoji Light</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0906; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #302820; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 1.5s 2s forwards; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">Shoji Light</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+let t = 0;
+
+function easeInOut(x) { return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; }
+
+function drawShoji(lightProgress) {
+  const panelW = Math.min(W * 0.8, 420);
+  const panelH = Math.min(H * 0.8, 520);
+  const px = (W - panelW) / 2;
+  const py = (H - panelH) / 2;
+
+  // 障子の光（背面から）
+  if (lightProgress > 0) {
+    const lightAlpha = easeInOut(lightProgress);
+
+    // メインの光
+    const lg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H) * 0.6);
+    lg.addColorStop(0, `rgba(255,240,200,${lightAlpha * 0.8})`);
+    lg.addColorStop(0.3, `rgba(255,230,180,${lightAlpha * 0.5})`);
+    lg.addColorStop(1, `rgba(200,170,120,0)`);
+    ctx.fillStyle = lg;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  // 障子の枠
+  ctx.strokeStyle = '#2a2018';
+  ctx.lineWidth = 6;
+  ctx.strokeRect(px, py, panelW, panelH);
+
+  // 縦の桟（3本）
+  const cols = 4;
+  const colW = panelW / cols;
+  ctx.lineWidth = 3;
+  for (let i = 1; i < cols; i++) {
+    ctx.beginPath();
+    ctx.moveTo(px + colW * i, py);
+    ctx.lineTo(px + colW * i, py + panelH);
+    ctx.stroke();
+  }
+
+  // 横の桟（和紙のコマ）
+  const rows = 8;
+  const rowH = panelH / rows;
+  for (let i = 1; i < rows; i++) {
+    ctx.lineWidth = i === Math.floor(rows * 0.3) ? 4 : 2;
+    ctx.beginPath();
+    ctx.moveTo(px, py + rowH * i);
+    ctx.lineTo(px + panelW, py + rowH * i);
+    ctx.stroke();
+  }
+
+  // 和紙のテクスチャ（光を通す）
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const cellX = px + col * colW;
+      const cellY = py + row * rowH;
+      const cellAlpha = lightProgress * (0.5 + Math.sin((row + col) * 0.8) * 0.1);
+
+      const paperGrad = ctx.createLinearGradient(cellX, cellY, cellX + colW, cellY + rowH);
+      paperGrad.addColorStop(0, `rgba(255,248,228,${cellAlpha})`);
+      paperGrad.addColorStop(1, `rgba(245,235,210,${cellAlpha * 0.85})`);
+      ctx.fillStyle = paperGrad;
+      ctx.fillRect(cellX + 2, cellY + 2, colW - 4, rowH - 4);
+    }
+  }
+
+  // 障子の影（手前に落ちる）
+  const shadowAlpha = lightProgress * 0.3;
+  const shadowOffset = 12;
+  ctx.fillStyle = `rgba(0,0,0,${shadowAlpha * 0.5})`;
+  ctx.fillRect(px + shadowOffset, py + shadowOffset, panelW, panelH);
+  ctx.clearRect(px, py, panelW, panelH); // 影のはみ出し消し
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  const lightP = Math.min(1, t / 120);
+
+  drawShoji(lightP);
+
+  if (t < 350) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

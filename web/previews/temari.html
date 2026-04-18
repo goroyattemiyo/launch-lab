@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Temari</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #080608; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #f0d8e8; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 0.8s 0.5s forwards; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">手毬　Temari</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+let t = 0;
+
+const BALL_R = Math.min(W, H) * 0.14;
+const FLOOR_Y = H * 0.72;
+
+// 手毬のパターン定義
+const patterns = [
+  { colors: ['#e84060', '#f0a0b0', '#ffffff', '#e84060'] },
+  { colors: ['#40a0e0', '#a0d8f0', '#ffffff', '#2060c0'] },
+  { colors: ['#60c840', '#b0e880', '#ffffff', '#2a8020'] },
+  { colors: ['#e8a020', '#f0d080', '#ffffff', '#c06010'] },
+];
+
+let ballY = H * 0.2;
+let ballVY = 0;
+let bounceCount = 0;
+const GRAVITY = 0.45;
+const RESTITUTION = 0.72;
+let patternIndex = 0;
+
+function drawTemari(x, y, r, pattern, squashX, squashY) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(squashX, squashY);
+
+  // ベース（グラデーション）
+  const bg = ctx.createRadialGradient(-r * 0.3, -r * 0.3, 0, 0, 0, r);
+  bg.addColorStop(0, pattern.colors[1]);
+  bg.addColorStop(0.5, pattern.colors[0]);
+  bg.addColorStop(1, pattern.colors[3]);
+  ctx.fillStyle = bg;
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 糸のパターン（手毬特有の幾何学模様）
+  ctx.strokeStyle = pattern.colors[2];
+  ctx.lineWidth = 1.5;
+
+  // 縦の帯
+  for (let i = 0; i < 6; i++) {
+    const angle = (i / 6) * Math.PI;
+    ctx.save();
+    ctx.rotate(angle);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 0.25, r, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 横の帯（3本）
+  for (let j = -1; j <= 1; j++) {
+    const ry = j * r * 0.5;
+    const rx = Math.sqrt(Math.max(0, r * r - ry * ry));
+    ctx.save();
+    ctx.globalAlpha = 0.7;
+    ctx.beginPath();
+    ctx.ellipse(0, ry, rx, rx * 0.2, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 装飾の星（極点）
+  ctx.fillStyle = pattern.colors[1];
+  ctx.beginPath();
+  ctx.arc(0, -r * 0.95, 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(0, r * 0.95, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // ハイライト
+  const hl = ctx.createRadialGradient(-r * 0.3, -r * 0.35, 0, -r * 0.3, -r * 0.35, r * 0.4);
+  hl.addColorStop(0, 'rgba(255,255,255,0.5)');
+  hl.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = hl;
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawShadow(x, y, r, squashX) {
+  const shadowY = FLOOR_Y + 5;
+  const dist = Math.abs(y - FLOOR_Y);
+  const shadowScale = Math.max(0.2, 1 - dist / (H * 0.5));
+  const shadowAlpha = shadowScale * 0.35;
+  const sg = ctx.createRadialGradient(x, shadowY, 0, x, shadowY, r * 1.2 * shadowScale);
+  sg.addColorStop(0, `rgba(0,0,0,${shadowAlpha})`);
+  sg.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = sg;
+  ctx.beginPath();
+  ctx.ellipse(x, shadowY, r * 1.5 * shadowScale * squashX, r * 0.2 * shadowScale, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  // 物理
+  ballVY += GRAVITY;
+  ballY += ballVY;
+
+  let squashX = 1, squashY = 1;
+  if (ballY + BALL_R >= FLOOR_Y) {
+    ballY = FLOOR_Y - BALL_R;
+    const impact = Math.min(1, Math.abs(ballVY) / 15);
+    ballVY = -Math.abs(ballVY) * RESTITUTION;
+    squashX = 1 + impact * 0.3;
+    squashY = 1 - impact * 0.25;
+    bounceCount++;
+    if (bounceCount % 2 === 0) patternIndex = (patternIndex + 1) % patterns.length;
+  }
+
+  // 上昇中のわずかな伸び
+  if (ballVY < 0) {
+    const stretchFactor = Math.min(0.15, Math.abs(ballVY) * 0.008);
+    squashX = 1 - stretchFactor;
+    squashY = 1 + stretchFactor;
+  }
+
+  const cx = W / 2;
+  drawShadow(cx, ballY, BALL_R, squashX);
+  drawTemari(cx, ballY, BALL_R, patterns[patternIndex], squashX, squashY);
+
+  if (t < 400) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

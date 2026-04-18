@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kamon Reveal</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #080808; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(14px, 3vw, 20px); color: #d4c090; letter-spacing: 0.6em; opacity: 0; animation: fadeIn 1s 2.5s forwards; margin-top: 160px; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">家紋　KAMON</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+const cx = W/2, cy = H/2 - 30;
+let t = 0;
+
+function easeOutQuint(x) { return 1 - Math.pow(1 - x, 5); }
+
+// 三つ巴紋を描く
+function drawMitsudomoe(x, y, r, alpha, scale) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(scale, scale);
+  ctx.globalAlpha = alpha;
+
+  // 外円
+  ctx.strokeStyle = '#c8a840';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 内円
+  ctx.beginPath();
+    ctx.arc(0, 0, r * 0.85, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 三つの勾玉
+  const tomoeR = r * 0.38;
+  for (let i = 0; i < 3; i++) {
+    const angle = (i / 3) * Math.PI * 2 - Math.PI / 2;
+    const ox = Math.cos(angle) * r * 0.35;
+    const oy = Math.sin(angle) * r * 0.35;
+
+    ctx.fillStyle = '#c8a840';
+    ctx.beginPath();
+    ctx.arc(ox, oy, tomoeR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 内穴
+    ctx.fillStyle = '#080808';
+    ctx.beginPath();
+    ctx.arc(ox + Math.cos(angle) * tomoeR * 0.35, oy + Math.sin(angle) * tomoeR * 0.35, tomoeR * 0.42, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  const R = Math.min(W, H) * 0.2;
+
+  // フェーズ: 0〜40 暗→光, 40〜140 家紋出現, 140〜200 輝き
+  let glowAlpha = 0, kamonAlpha = 0, kamonScale = 0.2;
+
+  if (t < 40) {
+    glowAlpha = t / 40;
+  } else if (t < 140) {
+    glowAlpha = 1;
+    const p = easeOutQuint((t - 40) / 100);
+    kamonAlpha = p;
+    kamonScale = 0.2 + p * 0.8;
+  } else {
+    glowAlpha = 1 - (t - 140) / 80;
+    kamonAlpha = 1;
+    kamonScale = 1;
+  }
+
+  // グロー
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 1.8);
+  g.addColorStop(0, `rgba(200,160,60,${glowAlpha * 0.3})`);
+  g.addColorStop(0.4, `rgba(180,130,40,${glowAlpha * 0.15})`);
+  g.addColorStop(1, 'rgba(180,130,40,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+
+  // 光の粒
+  if (t < 160) {
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2 + t * 0.02;
+      const dist = R * 0.9 + Math.sin(t * 0.05 + i) * R * 0.2;
+      const px = cx + Math.cos(a) * dist;
+      const py = cy + Math.sin(a) * dist;
+      ctx.fillStyle = `rgba(220,180,80,${glowAlpha * 0.5})`;
+      ctx.beginPath();
+      ctx.arc(px, py, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  drawMitsudomoe(cx, cy, R, kamonAlpha, kamonScale);
+
+  if (t < 320) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

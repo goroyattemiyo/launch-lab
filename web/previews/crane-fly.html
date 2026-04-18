@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crane Fly</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #08080f; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #e8d8c8; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 1s 2.5s forwards; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">Crane Fly</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+const cx = W/2, cy = H/2;
+let t = 0;
+
+// 折り鶴の描画（幾何学的シルエット）
+function drawOrigamiCrane(x, y, size, angle, flapAngle, alpha) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.globalAlpha = alpha;
+
+  const s = size;
+  const fw = flapAngle; // 翼の羽ばたき角度
+
+  // 体（菱形）
+  ctx.fillStyle = '#e8e0d8';
+  ctx.beginPath();
+  ctx.moveTo(0, -s * 0.4);     // 頭
+  ctx.lineTo(s * 0.2, 0);       // 右
+  ctx.lineTo(0, s * 0.5);       // 尻尾
+  ctx.lineTo(-s * 0.2, 0);      // 左
+  ctx.closePath();
+  ctx.fill();
+
+  // 右翼
+  ctx.save();
+  ctx.translate(s * 0.1, s * 0.05);
+  ctx.rotate(fw);
+  ctx.fillStyle = '#f0e8e0';
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(s * 0.9, -s * 0.2);
+  ctx.lineTo(s * 0.7, s * 0.1);
+  ctx.lineTo(s * 0.3, s * 0.12);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  // 左翼
+  ctx.save();
+  ctx.translate(-s * 0.1, s * 0.05);
+  ctx.rotate(-fw);
+  ctx.fillStyle = '#f0e8e0';
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(-s * 0.9, -s * 0.2);
+  ctx.lineTo(-s * 0.7, s * 0.1);
+  ctx.lineTo(-s * 0.3, s * 0.12);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  // 頭
+  ctx.fillStyle = '#c8b8a8';
+  ctx.beginPath();
+  ctx.ellipse(0, -s * 0.45, s * 0.08, s * 0.12, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // くちばし
+  ctx.fillStyle = '#a09080';
+  ctx.beginPath();
+  ctx.moveTo(s * 0.06, -s * 0.52);
+  ctx.lineTo(s * 0.18, -s * 0.48);
+  ctx.lineTo(s * 0.06, -s * 0.42);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
+const cranes = [
+  { startX: -W * 0.6, startY: H * 0.2, endX: cx * 0.6, endY: cy * 0.8, size: 50, delay: 0 },
+  { startX: W * 1.4, startY: H * 0.1, endX: cx * 1.3, endY: cy * 0.6, size: 32, delay: 0.15 },
+  { startX: -W * 0.3, startY: H * 0.8, endX: cx * 0.8, endY: cy * 1.2, size: 25, delay: 0.25 },
+  { startX: W * 1.2, startY: H * 0.7, endX: cx * 1.1, endY: cy * 1.1, size: 20, delay: 0.3 },
+];
+
+function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  const totalProgress = Math.min(1, t / 150);
+
+  cranes.forEach(cr => {
+    const p = Math.max(0, Math.min(1, (totalProgress - cr.delay) / (1 - cr.delay)));
+    const ep = easeOutCubic(p);
+
+    const x = cr.startX + (cr.endX - cr.startX) * ep;
+    const y = cr.startY + (cr.endY - cr.startY) * ep;
+
+    // 移動方向に体を向ける
+    const dx = cr.endX - cr.startX;
+    const dy = cr.endY - cr.startY;
+    const angle = Math.atan2(dy, dx) + Math.PI / 2;
+
+    // 羽ばたき
+    const flap = Math.sin(t * 0.15 + cr.delay * 10) * 0.4;
+
+    const alpha = Math.min(1, p * 4);
+    drawOrigamiCrane(x, y, cr.size, angle, flap, alpha);
+  });
+
+  if (t < 400) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

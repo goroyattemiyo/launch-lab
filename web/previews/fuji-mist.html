@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fuji Mist</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #08090e; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #c8d8e8; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 1.2s 2.5s forwards; margin-top: 120px; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">Fuji Mist</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+const cx = W/2;
+let t = 0;
+
+function drawFuji(alpha) {
+  const peakY = H * 0.18;
+  const baseY = H * 0.65;
+  const baseW = Math.min(W * 0.75, 550);
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // 富士山本体
+  const mountainGrad = ctx.createLinearGradient(cx, peakY, cx, baseY);
+  mountainGrad.addColorStop(0, '#2a3050');
+  mountainGrad.addColorStop(0.25, '#1e2440');
+  mountainGrad.addColorStop(1, '#141828');
+  ctx.fillStyle = mountainGrad;
+
+  ctx.beginPath();
+  ctx.moveTo(cx, peakY);
+  // 左側の稜線（富士山の特徴的な曲線）
+  ctx.bezierCurveTo(cx - baseW * 0.12, peakY + (baseY - peakY) * 0.4,
+                    cx - baseW * 0.38, peakY + (baseY - peakY) * 0.75,
+                    cx - baseW / 2, baseY);
+  ctx.lineTo(cx + baseW / 2, baseY);
+  // 右側の稜線
+  ctx.bezierCurveTo(cx + baseW * 0.38, peakY + (baseY - peakY) * 0.75,
+                    cx + baseW * 0.12, peakY + (baseY - peakY) * 0.4,
+                    cx, peakY);
+  ctx.closePath();
+  ctx.fill();
+
+  // 雪冠
+  ctx.fillStyle = 'rgba(220,228,240,0.9)';
+  ctx.beginPath();
+  ctx.moveTo(cx, peakY);
+  ctx.bezierCurveTo(cx - baseW * 0.04, peakY + (baseY - peakY) * 0.14,
+                    cx - baseW * 0.12, peakY + (baseY - peakY) * 0.18,
+                    cx - baseW * 0.16, peakY + (baseY - peakY) * 0.15);
+  ctx.lineTo(cx + baseW * 0.16, peakY + (baseY - peakY) * 0.15);
+  ctx.bezierCurveTo(cx + baseW * 0.12, peakY + (baseY - peakY) * 0.18,
+                    cx + baseW * 0.04, peakY + (baseY - peakY) * 0.14,
+                    cx, peakY);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawMist(alpha, phase) {
+  // 複数レイヤーの霧
+  const layers = [
+    { y: H * 0.55, h: H * 0.25, a: 0.6, speed: 1 },
+    { y: H * 0.45, h: H * 0.18, a: 0.35, speed: -0.7 },
+    { y: H * 0.62, h: H * 0.2, a: 0.5, speed: 0.5 },
+  ];
+
+  layers.forEach((l, i) => {
+    const xOff = Math.sin(phase * 0.008 * l.speed + i) * 30;
+    const g = ctx.createLinearGradient(0, l.y, 0, l.y + l.h);
+    g.addColorStop(0, `rgba(180,190,210,0)`);
+    g.addColorStop(0.3, `rgba(180,190,210,${l.a * alpha})`);
+    g.addColorStop(0.7, `rgba(180,190,210,${l.a * alpha})`);
+    g.addColorStop(1, `rgba(180,190,210,0)`);
+    ctx.fillStyle = g;
+
+    ctx.beginPath();
+    ctx.moveTo(-50, l.y);
+    for (let x = -50; x <= W + 50; x += 20) {
+      const wave = Math.sin((x + xOff) * 0.01 + phase * 0.01) * 15;
+      ctx.lineTo(x, l.y + wave);
+    }
+    ctx.lineTo(W + 50, l.y + l.h);
+    ctx.lineTo(-50, l.y + l.h);
+    ctx.closePath();
+    ctx.fill();
+  });
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  // フェーズ: 霧が多い→富士が現れる
+  let fujiAlpha = 0, mistAlpha = 1;
+  if (t < 80) { mistAlpha = 1; fujiAlpha = 0; }
+  else if (t < 160) {
+    const p = (t - 80) / 80;
+    fujiAlpha = p;
+    mistAlpha = 1 - p * 0.4;
+  } else { fujiAlpha = 1; mistAlpha = 0.6; }
+
+  // 空のグラデーション
+  const sky = ctx.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, `rgba(10,14,22,${Math.min(1, t/60)})`);
+  sky.addColorStop(0.5, `rgba(16,20,35,${Math.min(1, t/60)})`);
+  sky.addColorStop(1, `rgba(25,30,50,${Math.min(1, t/60)})`);
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H);
+
+  drawFuji(fujiAlpha);
+  drawMist(mistAlpha, t);
+
+  if (t < 400) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wave Ukiyo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #06081a; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #e8f0ff; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 1s 1.5s forwards; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">Wave Ukiyo</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+let t = 0;
+
+function drawUkiyoWave(phase, yBase, amplitude, color, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  ctx.strokeStyle = 'rgba(240,248,255,0.7)';
+  ctx.lineWidth = 1.5;
+
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+
+  for (let x = 0; x <= W; x += 4) {
+    const xRatio = x / W;
+    // 神奈川沖浪裏スタイルの波形
+    const bigWave = Math.sin(xRatio * Math.PI * 2 + phase) * amplitude;
+    const smallWave = Math.sin(xRatio * Math.PI * 6 + phase * 1.5) * amplitude * 0.2;
+    const y = yBase + bigWave + smallWave;
+    ctx.lineTo(x, y);
+  }
+
+  ctx.lineTo(W, H);
+  ctx.lineTo(0, H);
+  ctx.closePath();
+  ctx.fill();
+
+  // 波頭の白い泡
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for (let x = 0; x <= W; x += 4) {
+    const xRatio = x / W;
+    const bigWave = Math.sin(xRatio * Math.PI * 2 + phase) * amplitude;
+    const smallWave = Math.sin(xRatio * Math.PI * 6 + phase * 1.5) * amplitude * 0.2;
+    const y = yBase + bigWave + smallWave;
+    ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// 波頭のカール
+function drawWaveCurl(phase, yBase, amplitude, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha * 0.8;
+
+  for (let wx = 0; wx < W; wx += W / 3) {
+    const x = wx + W * 0.1;
+    const xRatio = x / W;
+    const y = yBase + Math.sin(xRatio * Math.PI * 2 + phase) * amplitude - amplitude * 0.3;
+
+    // 丸い波頭
+    ctx.fillStyle = 'rgba(200,225,255,0.6)';
+    ctx.beginPath();
+    ctx.arc(x, y, amplitude * 0.25, Math.PI * 0.8, Math.PI * 2.2);
+    ctx.quadraticCurveTo(x + amplitude * 0.15, y + amplitude * 0.15, x - amplitude * 0.2, y + amplitude * 0.08);
+    ctx.closePath();
+    ctx.fill();
+
+    // 泡沫
+    for (let i = 0; i < 5; i++) {
+      const bx = x + (Math.random() - 0.5) * amplitude * 0.4;
+      const by = y + Math.random() * amplitude * 0.2;
+      ctx.fillStyle = 'rgba(240,248,255,0.5)';
+      ctx.beginPath();
+      ctx.arc(bx, by, 1.5 + Math.random() * 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  ctx.restore();
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  const fadeIn = Math.min(1, t / 40);
+  const phase = t * 0.025;
+
+  // 空
+  const sky = ctx.createLinearGradient(0, 0, 0, H * 0.5);
+  sky.addColorStop(0, `rgba(8,12,40,${fadeIn})`);
+  sky.addColorStop(1, `rgba(15,25,70,${fadeIn})`);
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H * 0.5);
+
+  // 波 後ろから前に重ねる
+  const amp = Math.min(H * 0.12, 55);
+  drawUkiyoWave(phase * 0.8, H * 0.72, amp * 0.6, '#1a3060', fadeIn * 0.8);
+  drawUkiyoWave(phase * 0.9 + 1, H * 0.62, amp * 0.8, '#1e3878', fadeIn * 0.9);
+  drawUkiyoWave(phase + 2, H * 0.5, amp, '#2040a0', fadeIn);
+  drawUkiyoWave(phase * 1.1 + 3, H * 0.38, amp * 1.1, '#1838a8', fadeIn);
+  drawWaveCurl(phase, H * 0.38, amp, fadeIn);
+
+  if (t < 400) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

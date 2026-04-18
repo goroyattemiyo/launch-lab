@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taiko Beat</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0604; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #e8c880; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 0.6s 0.2s forwards; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">Taiko Beat</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+const cx = W/2, cy = H/2;
+let t = 0;
+const ripples = [];
+const DRUM_R = Math.min(W, H) * 0.15;
+
+// ビートタイミング（フレーム）
+const beats = [0, 30, 55, 75, 90, 110, 130, 145, 158];
+
+function addRipple(strength) {
+  ripples.push({ r: DRUM_R, maxR: Math.min(W, H) * 0.6, alpha: 0.8 * strength, speed: 3 + strength * 2 });
+}
+
+function drawDrum(beatProgress) {
+  const scale = 1 + beatProgress * 0.08;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(scale, scale);
+
+  // 太鼓の胴体（赤）
+  const drumGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, DRUM_R);
+  drumGrad.addColorStop(0, '#6a1010');
+  drumGrad.addColorStop(0.6, '#8a1818');
+  drumGrad.addColorStop(1, '#5a0c0c');
+  ctx.fillStyle = drumGrad;
+  ctx.beginPath();
+  ctx.arc(0, 0, DRUM_R, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 鼓面（黒）
+  ctx.fillStyle = '#1a1210';
+  ctx.beginPath();
+  ctx.arc(0, 0, DRUM_R * 0.82, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 鼓面の中心（打撃面）
+  ctx.fillStyle = beatProgress > 0.5 ? `rgba(200,160,60,${beatProgress * 0.4})` : '#141010';
+  ctx.beginPath();
+  ctx.arc(0, 0, DRUM_R * 0.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 鋲
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    const r = DRUM_R * 0.9;
+    ctx.fillStyle = '#c8a040';
+    ctx.beginPath();
+    ctx.arc(Math.cos(a) * r, Math.sin(a) * r, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 縄
+  ctx.strokeStyle = '#4a3010';
+  ctx.lineWidth = 3;
+  for (let i = 0; i < 4; i++) {
+    const a = (i / 4) * Math.PI * 2 + Math.PI / 8;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a) * DRUM_R * 0.95, Math.sin(a) * DRUM_R * 0.95);
+    ctx.lineTo(Math.cos(a + 0.3) * DRUM_R * 1.05, Math.sin(a + 0.3) * DRUM_R * 1.05);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  // ビート検出
+  let beatProgress = 0;
+  beats.forEach(b => {
+    const diff = t - b;
+    if (diff >= 0 && diff < 3) {
+      if (diff === 0) addRipple(0.6 + Math.random() * 0.4);
+      beatProgress = Math.max(beatProgress, 1 - diff / 3);
+    }
+  });
+
+  // 波紋の描画と更新
+  ripples.forEach((r, i) => {
+    r.r += r.speed;
+    r.alpha -= 0.012;
+
+    if (r.alpha <= 0 || r.r > r.maxR) {
+      ripples.splice(i, 1);
+      return;
+    }
+
+    ctx.strokeStyle = `rgba(220,160,60,${r.alpha})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r.r, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 内側の波紋（細い）
+    if (r.r > DRUM_R + 20) {
+      ctx.strokeStyle = `rgba(220,180,80,${r.alpha * 0.4})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r.r - 12, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  });
+
+  drawDrum(beatProgress);
+
+  // ビートの光
+  if (beatProgress > 0) {
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, DRUM_R * 2);
+    g.addColorStop(0, `rgba(220,160,60,${beatProgress * 0.15})`);
+    g.addColorStop(1, 'rgba(220,160,60,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  if (t < 350) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matcha Mist</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #040806; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #a8d870; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 2s 1s forwards; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">Matcha Mist</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+const cx = W / 2, cy = H / 2;
+let t = 0;
+
+const clouds = [];
+for (let i = 0; i < 12; i++) {
+  clouds.push({
+    x: cx + (Math.random() - 0.5) * W * 0.4,
+    y: cy + (Math.random() - 0.5) * H * 0.4,
+    r: Math.min(W, H) * (0.1 + Math.random() * 0.25),
+    alpha: 0,
+    targetAlpha: 0.08 + Math.random() * 0.12,
+    delay: Math.random() * 80,
+    hue: 90 + Math.random() * 30,
+    sat: 50 + Math.random() * 30,
+    lit: 35 + Math.random() * 20,
+    vx: (Math.random() - 0.5) * 0.15,
+    vy: (Math.random() - 0.5) * 0.1,
+  });
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  clouds.forEach(cl => {
+    if (t > cl.delay) {
+      cl.alpha = Math.min(cl.targetAlpha, cl.alpha + 0.002);
+    }
+    cl.x += cl.vx;
+    cl.y += cl.vy;
+    if (cl.x < -cl.r) cl.x = W + cl.r;
+    if (cl.x > W + cl.r) cl.x = -cl.r;
+
+    if (cl.alpha <= 0) return;
+
+    const g = ctx.createRadialGradient(cl.x, cl.y, 0, cl.x, cl.y, cl.r);
+    g.addColorStop(0, `hsla(${cl.hue},${cl.sat}%,${cl.lit}%,${cl.alpha})`);
+    g.addColorStop(0.5, `hsla(${cl.hue},${cl.sat - 10}%,${cl.lit - 5}%,${cl.alpha * 0.6})`);
+    g.addColorStop(1, `hsla(${cl.hue},${cl.sat}%,${cl.lit}%,0)`);
+    ctx.fillStyle = g;
+    ctx.fillRect(cl.x - cl.r, cl.y - cl.r, cl.r * 2, cl.r * 2);
+  });
+
+  // 中心の光
+  const centerGlow = Math.min(1, t / 100);
+  const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(W, H) * 0.3);
+  cg.addColorStop(0, `rgba(120,200,80,${centerGlow * 0.12})`);
+  cg.addColorStop(1, 'rgba(80,160,40,0)');
+  ctx.fillStyle = cg;
+  ctx.fillRect(0, 0, W, H);
+
+  if (t < 400) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

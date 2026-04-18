@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Torii Gate</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #c8a882; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 1.2s 2.2s forwards; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">Torii Gate</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+const cx = W/2, cy = H/2;
+let progress = 0;
+let fogAlpha = 0;
+let toriAlpha = 0;
+let t = 0;
+
+function drawTorii(alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const bw = Math.min(W, 400) * 0.55;
+  const bh = Math.min(H, 400) * 0.6;
+  const x0 = cx - bw/2, x1 = cx + bw/2;
+  const y0 = cy - bh/2, y1 = cy + bh/2 * 0.3;
+  const pillarW = bw * 0.07;
+
+  ctx.fillStyle = '#8b1a1a';
+
+  // 笠木（最上部横木）
+  const kasagiH = bh * 0.07;
+  const kasagiW = bw * 1.08;
+  ctx.fillRect(cx - kasagiW/2, y0, kasagiW, kasagiH);
+
+  // 島木（2段目横木）
+  const shimagiY = y0 + kasagiH * 1.6;
+  ctx.fillRect(cx - bw/2 * 0.98, shimagiY, bw * 0.98, kasagiH * 0.75);
+
+  // 左柱
+  ctx.fillRect(x0 + bw * 0.05, shimagiY + kasagiH, pillarW, y1 - shimagiY - kasagiH);
+  // 右柱
+  ctx.fillRect(x1 - bw * 0.05 - pillarW, shimagiY + kasagiH, pillarW, y1 - shimagiY - kasagiH);
+
+  // 貫（横木3本目）
+  const nuguiY = y0 + bh * 0.35;
+  ctx.fillRect(x0 + bw * 0.05, nuguiY, bw * 0.9, kasagiH * 0.5);
+
+  ctx.restore();
+}
+
+function drawFog(alpha) {
+  ctx.save();
+  const layers = [
+    { y: H * 0.85, h: H * 0.3, a: 0.5 },
+    { y: H * 0.7, h: H * 0.2, a: 0.3 },
+    { y: H * 0.5, h: H * 0.15, a: 0.15 },
+  ];
+  layers.forEach(l => {
+    const g = ctx.createLinearGradient(0, l.y, 0, l.y + l.h);
+    g.addColorStop(0, `rgba(180,160,140,${l.a * alpha})`);
+    g.addColorStop(1, 'rgba(180,160,140,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, l.y, W, l.h);
+  });
+  // 横霧
+  const hg = ctx.createRadialGradient(cx, cy * 1.1, 0, cx, cy * 1.1, W * 0.6);
+  hg.addColorStop(0, `rgba(200,180,160,${0.12 * alpha})`);
+  hg.addColorStop(1, 'rgba(200,180,160,0)');
+  ctx.fillStyle = hg;
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  // フェーズ: 霧→鳥居→霧に溶ける
+  if (t < 60) fogAlpha = t / 60;
+  else if (t < 120) { fogAlpha = 1; toriAlpha = (t - 60) / 60; }
+  else if (t < 240) { fogAlpha = 1; toriAlpha = 1; }
+  else { fogAlpha = Math.max(0, 1 - (t - 240) / 80); toriAlpha = Math.max(0, 1 - (t - 240) / 80); }
+
+  drawFog(fogAlpha);
+  drawTorii(toriAlpha);
+
+  if (t < 360) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

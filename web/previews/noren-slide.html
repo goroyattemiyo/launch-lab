@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Noren Slide</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d0a08; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #f0e0c8; letter-spacing: 0.5em; opacity: 0; animation: fadeIn 0.8s 1.8s forwards; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">Noren Slide</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+let t = 0;
+const PANELS = 5;
+const panelW = W / PANELS;
+
+function easeOutCubic(x) {
+  return 1 - Math.pow(1 - x, 3);
+}
+
+function drawNoren(panelIndex, progress) {
+  const x = panelIndex * panelW;
+  // 各暖簾パネルの高さ（少しずつ異なる）
+  const panelH = H * (0.55 + (panelIndex % 2) * 0.05);
+
+  // パネルごとに少し遅れて落ちる → progress を調整
+  const delay = panelIndex * 0.08;
+  const p = Math.max(0, Math.min(1, (progress - delay) / (1 - delay * PANELS * 0.3)));
+  const ep = easeOutCubic(p);
+
+  // 暖簾は上端が固定で、下がスライドアップする動き（めくれる）
+  const visibleH = panelH * (1 - ep);
+  if (visibleH <= 0) return;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, 0, panelW - 1, visibleH);
+  ctx.clip();
+
+  // 布の色（藍色系）
+  const indigo = `#1a2a4a`;
+  const indigoLight = `#2a3e6a`;
+
+  // 背景色
+  ctx.fillStyle = indigo;
+  ctx.fillRect(x, 0, panelW - 1, panelH);
+
+  // 家紋風の白い円
+  if (panelIndex === Math.floor(PANELS / 2)) {
+    ctx.fillStyle = 'rgba(240,230,210,0.85)';
+    const cr = panelW * 0.28;
+    ctx.beginPath();
+    ctx.arc(x + panelW / 2, panelH * 0.35, cr, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 内側の模様
+    ctx.strokeStyle = indigo;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x + panelW / 2, panelH * 0.35, cr * 0.75, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x + panelW / 2, panelH * 0.35, cr * 0.5, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // 縦縞
+  ctx.strokeStyle = indigoLight;
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 4; i++) {
+    ctx.beginPath();
+    ctx.moveTo(x + panelW * (i / 4), 0);
+    ctx.lineTo(x + panelW * (i / 4), panelH);
+    ctx.stroke();
+  }
+
+  // 上部の棒
+  ctx.fillStyle = '#5a3a1a';
+  ctx.fillRect(x, 0, panelW - 1, 8);
+
+  // 揺れ（下端のカーブ）
+  if (ep < 0.95) {
+    const swayAmt = Math.sin(t * 0.1) * 3 * (1 - ep);
+    ctx.strokeStyle = 'rgba(240,230,210,0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x, visibleH);
+    ctx.quadraticCurveTo(x + panelW / 2, visibleH + swayAmt, x + panelW - 1, visibleH);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  t++;
+
+  // フェーズ: 0〜60 静止 → 60〜180 スライドアップ
+  let progress = 0;
+  if (t > 60) progress = Math.min(1, (t - 60) / 120);
+
+  for (let i = 0; i < PANELS; i++) {
+    drawNoren(i, progress);
+  }
+
+  if (t < 350) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

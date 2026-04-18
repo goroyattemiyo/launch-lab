@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hanabi Burst</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #020308; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { position: absolute; top: 0; left: 0; }
+  .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #f0e8d0; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 1s 0.5s forwards; }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title">Hanabi Burst</div>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+c.width = window.innerWidth; c.height = window.innerHeight;
+const W = c.width, H = c.height;
+let t = 0;
+const shells = [];
+const sparks = [];
+
+const PALETTES = [
+  ['#ff8080', '#ff4040', '#ffb060'],
+  ['#80c0ff', '#4080ff', '#c0e0ff'],
+  ['#80ff80', '#40c040', '#c0ffc0'],
+  ['#ffb040', '#ff8000', '#ffe080'],
+  ['#e080ff', '#a040c0', '#ffc0ff'],
+  ['#ff80c0', '#ff4090', '#ffd0e8'],
+];
+
+function launchShell(x, targetY, palette) {
+  shells.push({ x, y: H * 1.05, targetY, vy: -(H * 1.05 - targetY) / 35, trail: [], palette, exploded: false });
+}
+
+function explode(x, y, palette) {
+  const count = 60 + Math.floor(Math.random() * 40);
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2 + Math.random() * 0.2;
+    const speed = 1.5 + Math.random() * 3;
+    const color = palette[Math.floor(Math.random() * palette.length)];
+    sparks.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      alpha: 1,
+      r: 2 + Math.random() * 2,
+      color,
+      gravity: 0.04,
+      trail: [],
+      trailMax: 8,
+    });
+  }
+}
+
+// 発射スケジュール
+const schedule = [
+  { t: 10, x: W * 0.5, y: H * 0.25, p: PALETTES[0] },
+  { t: 55, x: W * 0.3, y: H * 0.2, p: PALETTES[1] },
+  { t: 60, x: W * 0.7, y: H * 0.28, p: PALETTES[3] },
+  { t: 110, x: W * 0.5, y: H * 0.15, p: PALETTES[4] },
+  { t: 115, x: W * 0.2, y: H * 0.3, p: PALETTES[2] },
+  { t: 120, x: W * 0.8, y: H * 0.22, p: PALETTES[5] },
+  { t: 170, x: W * 0.45, y: H * 0.18, p: PALETTES[0] },
+  { t: 175, x: W * 0.6, y: H * 0.12, p: PALETTES[1] },
+];
+
+function loop() {
+  ctx.fillStyle = 'rgba(2,3,8,0.3)';
+  ctx.fillRect(0, 0, W, H);
+  t++;
+
+  // 発射
+  schedule.forEach(s => { if (t === s.t) launchShell(s.x, s.y, s.p); });
+
+  // 打ち上げ玉の更新
+  shells.forEach((sh, i) => {
+    sh.trail.push({ x: sh.x, y: sh.y });
+    if (sh.trail.length > 12) sh.trail.shift();
+    sh.y += sh.vy;
+    if (sh.y <= sh.targetY && !sh.exploded) {
+      sh.exploded = true;
+      explode(sh.x, sh.y, sh.palette);
+      shells.splice(i, 1);
+      return;
+    }
+    // 軌跡
+    sh.trail.forEach((pt, ti) => {
+      const a = (ti / sh.trail.length) * 0.6;
+      ctx.fillStyle = `rgba(255,200,100,${a})`;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  });
+
+  // 火花の更新
+  sparks.forEach((sp, i) => {
+    sp.trail.push({ x: sp.x, y: sp.y });
+    if (sp.trail.length > sp.trailMax) sp.trail.shift();
+    sp.vy += sp.gravity;
+    sp.x += sp.vx;
+    sp.y += sp.vy;
+    sp.vx *= 0.98;
+    sp.alpha -= 0.016;
+
+    if (sp.alpha <= 0) { sparks.splice(i, 1); return; }
+
+    // 尾
+    for (let ti = 0; ti < sp.trail.length; ti++) {
+      const ratio = ti / sp.trail.length;
+      ctx.fillStyle = sp.color.replace(')', `,${ratio * sp.alpha * 0.5})`).replace('rgb', 'rgba');
+      ctx.beginPath();
+      ctx.arc(sp.trail[ti].x, sp.trail[ti].y, sp.r * ratio * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 本体
+    ctx.fillStyle = sp.color;
+    ctx.globalAlpha = sp.alpha;
+    ctx.beginPath();
+    ctx.arc(sp.x, sp.y, sp.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  });
+
+  if (t < 400) requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
