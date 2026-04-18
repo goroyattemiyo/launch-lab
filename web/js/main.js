@@ -301,3 +301,11 @@ function initUsecaseLoop() {
 
   setTimeout(tick, 1400);
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadWorks();
+  requestAnimationFrame(() => {
+    initHeroCanvas();
+    initUsecaseLoop();
+  });
+});
