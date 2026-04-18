@@ -6,7 +6,7 @@
 <title>Koi Drift</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #060d12; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  body { background: #060d12; width: 100vw; height: 100vh; overflow: hidden; display: flex; align-items: center; justify-content: center; }
   canvas { position: absolute; top: 0; left: 0; }
   .title { position: relative; z-index: 10; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif; font-size: clamp(16px, 3.5vw, 24px); color: #d4a840; letter-spacing: 0.4em; opacity: 0; animation: fadeIn 1s 2.5s forwards; }
   @keyframes fadeIn { to { opacity: 1; } }
@@ -18,142 +18,450 @@
 <script>
 const c = document.getElementById('c');
 const ctx = c.getContext('2d');
-c.width = window.innerWidth; c.height = window.innerHeight;
+c.width = window.innerWidth;
+c.height = window.innerHeight;
 const W = c.width, H = c.height;
 let t = 0;
 
-// 水面の波紋
-const ripples = [];
-
-function addRipple(x, y) {
-  ripples.push({ x, y, r: 0, alpha: 0.3 });
+// =====================
+// 鯉の骨格ベース
+// spine: 脊椎の制御点（前→後）
+// spinePoints(t, cx, cy, angle, phase) → 7点の脊椎座標
+// =====================
+function spinePoints(bx, by, bodyLen, angle, wave) {
+  const pts = [];
+  const segs = 7;
+  for (let i = 0; i < segs; i++) {
+    const ratio = i / (segs - 1);
+    // 後ろほど波が大きい（魚らしいうねり）
+    const waveAmt = Math.pow(ratio, 1.8) * bodyLen * 0.22;
+    const waveAngle = wave + ratio * Math.PI * 1.1;
+    const sx = bx + Math.cos(angle) * bodyLen * ratio
+               + Math.cos(angle + Math.PI / 2) * Math.sin(waveAngle) * waveAmt;
+    const sy = by + Math.sin(angle) * bodyLen * ratio
+               + Math.sin(angle + Math.PI / 2) * Math.sin(waveAngle) * waveAmt;
+    pts.push({ x: sx, y: sy });
+  }
+  return pts;
 }
 
-// 鯉の描画
-function drawKoi(x, y, angle, scale, alpha) {
+// 各脊椎点での体幅（紡錘形）
+function bodyWidth(ratio, maxW) {
+  // 頭先端→最大幅（前1/3）→尾柄で細くなる
+  if (ratio < 0.15) return maxW * (ratio / 0.15) * 0.6;
+  if (ratio < 0.4)  return maxW * (0.6 + (ratio - 0.15) / 0.25 * 0.4);
+  if (ratio < 0.75) return maxW * (1.0 - (ratio - 0.4) / 0.35 * 0.35);
+  return maxW * (0.65 - (ratio - 0.75) / 0.25 * 0.5);
+}
+
+function drawKoi(bx, by, bodyLen, angle, wave, alpha) {
+  const spine = spinePoints(bx, by, bodyLen, angle, wave);
+  const segs = spine.length;
+  const maxW = bodyLen * 0.18;
+
   ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(angle);
-  ctx.scale(scale, scale);
   ctx.globalAlpha = alpha;
 
-  const len = 60;
+  // ---- 尾ひれ ----
+  const tail = spine[segs - 1];
+  const prev = spine[segs - 2];
+  const tailAngle = Math.atan2(tail.y - prev.y, tail.x - prev.x);
+  const tailWave = Math.sin(wave * 1.4) * 0.5;
+  const tailLen = bodyLen * 0.38;
+  const tailSpread = bodyLen * 0.16;
 
-  // 尾ひれ
-  ctx.fillStyle = '#c8841a';
   ctx.beginPath();
-  ctx.moveTo(-len * 0.5, 0);
-  ctx.quadraticCurveTo(-len * 0.85, -len * 0.35, -len * 1.1, -len * 0.15);
-  ctx.quadraticCurveTo(-len * 0.9, 0, -len * 1.1, len * 0.15);
-  ctx.quadraticCurveTo(-len * 0.85, len * 0.35, -len * 0.5, 0);
+  ctx.moveTo(tail.x, tail.y);
+  // 上葉
+  ctx.quadraticCurveTo(
+    tail.x + Math.cos(tailAngle + 0.5 + tailWave) * tailLen * 0.6,
+    tail.y + Math.sin(tailAngle + 0.5 + tailWave) * tailLen * 0.6,
+    tail.x + Math.cos(tailAngle + 0.3 + tailWave) * tailLen,
+    tail.y + Math.sin(tailAngle + 0.3 + tailWave) * tailLen
+  );
+  ctx.quadraticCurveTo(
+    tail.x + Math.cos(tailAngle) * tailLen * 0.5,
+    tail.y + Math.sin(tailAngle) * tailLen * 0.5,
+    tail.x, tail.y
+  );
+  // 下葉
+  ctx.quadraticCurveTo(
+    tail.x + Math.cos(tailAngle - 0.5 + tailWave) * tailLen * 0.6,
+    tail.y + Math.sin(tailAngle - 0.5 + tailWave) * tailLen * 0.6,
+    tail.x + Math.cos(tailAngle - 0.3 + tailWave) * tailLen,
+    tail.y + Math.sin(tailAngle - 0.3 + tailWave) * tailLen
+  );
+  ctx.quadraticCurveTo(
+    tail.x + Math.cos(tailAngle) * tailLen * 0.5,
+    tail.y + Math.sin(tailAngle) * tailLen * 0.5,
+    tail.x, tail.y
+  );
+  ctx.closePath();
+  const tg = ctx.createRadialGradient(tail.x, tail.y, 0, tail.x, tail.y, tailLen);
+  tg.addColorStop(0, 'rgba(210,120,30,0.9)');
+  tg.addColorStop(0.5, 'rgba(200,100,20,0.6)');
+  tg.addColorStop(1, 'rgba(180,80,10,0.1)');
+  ctx.fillStyle = tg;
   ctx.fill();
 
-  // 胴体
-  const bodyGrad = ctx.createLinearGradient(-len * 0.5, -len * 0.2, len * 0.5, len * 0.2);
-  bodyGrad.addColorStop(0, '#e8a020');
-  bodyGrad.addColorStop(0.4, '#f0c040');
-  bodyGrad.addColorStop(0.7, '#e09018');
-  bodyGrad.addColorStop(1, '#c07010');
-  ctx.fillStyle = bodyGrad;
+  // ---- 胴体（左右輪郭をベジェで描く）----
+  // 左側の輪郭点
+  const leftPts = [], rightPts = [];
+  for (let i = 0; i < segs; i++) {
+    const ratio = i / (segs - 1);
+    const w = bodyWidth(ratio, maxW);
+    const pt = spine[i];
+    // 脊椎の法線方向
+    let nx, ny;
+    if (i < segs - 1) {
+      const dx = spine[i + 1].x - pt.x;
+      const dy = spine[i + 1].y - pt.y;
+      const len = Math.sqrt(dx * dx + dy * dy);
+      nx = -dy / len; ny = dx / len;
+    } else {
+      const dx = pt.x - spine[i - 1].x;
+      const dy = pt.y - spine[i - 1].y;
+      const len = Math.sqrt(dx * dx + dy * dy);
+      nx = -dy / len; ny = dx / len;
+    }
+    leftPts.push({ x: pt.x + nx * w, y: pt.y + ny * w });
+    rightPts.push({ x: pt.x - nx * w, y: pt.y - ny * w });
+  }
+
+  // 胴体パスを描く
   ctx.beginPath();
-  ctx.ellipse(0, 0, len * 0.55, len * 0.22, 0, 0, Math.PI * 2);
+  ctx.moveTo(leftPts[0].x, leftPts[0].y);
+  for (let i = 1; i < segs; i++) {
+    const cp = {
+      x: (leftPts[i - 1].x + leftPts[i].x) / 2,
+      y: (leftPts[i - 1].y + leftPts[i].y) / 2,
+    };
+    ctx.quadraticCurveTo(leftPts[i - 1].x, leftPts[i - 1].y, cp.x, cp.y);
+  }
+  ctx.lineTo(leftPts[segs - 1].x, leftPts[segs - 1].y);
+  ctx.lineTo(rightPts[segs - 1].x, rightPts[segs - 1].y);
+  for (let i = segs - 2; i >= 0; i--) {
+    const cp = {
+      x: (rightPts[i + 1].x + rightPts[i].x) / 2,
+      y: (rightPts[i + 1].y + rightPts[i].y) / 2,
+    };
+    ctx.quadraticCurveTo(rightPts[i + 1].x, rightPts[i + 1].y, cp.x, cp.y);
+  }
+  ctx.closePath();
+
+  // 体のグラデーション（頭→尾）
+  const head = spine[0];
+  const bg = ctx.createLinearGradient(head.x, head.y, tail.x, tail.y);
+  bg.addColorStop(0,   '#f0c040');
+  bg.addColorStop(0.2, '#e8a828');
+  bg.addColorStop(0.5, '#d89020');
+  bg.addColorStop(0.8, '#c07818');
+  bg.addColorStop(1,   '#a06010');
+  ctx.fillStyle = bg;
   ctx.fill();
 
-  // 白斑
-  ctx.fillStyle = 'rgba(255,245,220,0.5)';
+  // ---- 鱗模様 ----
+  ctx.save();
+  ctx.clip(); // 胴体内にクリップ
+  ctx.strokeStyle = 'rgba(180,100,10,0.25)';
+  ctx.lineWidth = 0.7;
+  const scaleRows = 6;
+  const scaleCols = 10;
+  for (let row = 0; row < scaleRows; row++) {
+    for (let col = 0; col < scaleCols; col++) {
+      const ratio = (col + 0.5) / scaleCols;
+      const spineIdx = Math.floor(ratio * (segs - 1));
+      const sp = spine[Math.min(spineIdx, segs - 1)];
+      const w = bodyWidth(ratio, maxW);
+      const offset = ((row - scaleRows / 2) + (col % 2) * 0.5) / scaleRows;
+      const nx = leftPts[Math.min(spineIdx, segs - 1)].x - sp.x;
+      const ny = leftPts[Math.min(spineIdx, segs - 1)].y - sp.y;
+      const nlen = Math.sqrt(nx * nx + ny * ny) || 1;
+      const sx = sp.x + (nx / nlen) * offset * w * 2;
+      const sy = sp.y + (ny / nlen) * offset * w * 2;
+      const sr = w * 0.28;
+      ctx.beginPath();
+      ctx.arc(sx, sy, sr, Math.PI * 0.1, Math.PI * 0.9);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+
+  // ---- 白斑（錦鯉らしさ）----
+  ctx.save();
+  ctx.clip();
+  ctx.globalAlpha = alpha * 0.55;
+  const patches = [
+    { ratio: 0.2, side: 0.2 },
+    { ratio: 0.5, side: -0.15 },
+    { ratio: 0.65, side: 0.25 },
+  ];
+  patches.forEach(p => {
+    const idx = Math.floor(p.ratio * (segs - 1));
+    const sp = spine[Math.min(idx, segs - 1)];
+    const w = bodyWidth(p.ratio, maxW);
+    const nx = (leftPts[Math.min(idx, segs - 1)].x - sp.x);
+    const ny = (leftPts[Math.min(idx, segs - 1)].y - sp.y);
+    const nlen = Math.sqrt(nx * nx + ny * ny) || 1;
+    const px = sp.x + (nx / nlen) * p.side * w * 3;
+    const py = sp.y + (ny / nlen) * p.side * w * 3;
+    const pg = ctx.createRadialGradient(px, py, 0, px, py, w * 0.9);
+    pg.addColorStop(0, 'rgba(255,248,230,0.85)');
+    pg.addColorStop(1, 'rgba(255,240,200,0)');
+    ctx.fillStyle = pg;
+    ctx.beginPath();
+    ctx.ellipse(px, py, w * 0.9, w * 0.7, Math.atan2(ny, nx), 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.restore();
+
+  // ---- 胸びれ ----
+  const finIdx = 1;
+  const finPt = spine[finIdx];
+  const finAngle = Math.atan2(spine[finIdx + 1].y - finPt.y, spine[finIdx + 1].x - finPt.x);
+  const finWave = Math.sin(wave + 1.0) * 0.3;
+  const finLen = bodyLen * 0.22;
+  [1, -1].forEach(side => {
+    ctx.beginPath();
+    ctx.moveTo(finPt.x, finPt.y);
+    ctx.quadraticCurveTo(
+      finPt.x + Math.cos(finAngle + side * (1.2 + finWave)) * finLen * 0.7,
+      finPt.y + Math.sin(finAngle + side * (1.2 + finWave)) * finLen * 0.7,
+      finPt.x + Math.cos(finAngle + side * (0.9 + finWave)) * finLen,
+      finPt.y + Math.sin(finAngle + side * (0.9 + finWave)) * finLen
+    );
+    ctx.quadraticCurveTo(
+      finPt.x + Math.cos(finAngle + side * 0.4) * finLen * 0.4,
+      finPt.y + Math.sin(finAngle + side * 0.4) * finLen * 0.4,
+      finPt.x, finPt.y
+    );
+    ctx.fillStyle = 'rgba(200,130,30,0.55)';
+    ctx.fill();
+  });
+
+  // ---- 背びれ ----
+  const dorsalStart = spine[1];
+  const dorsalEnd   = spine[4];
+  const dorsalMid   = spine[2];
+  const dorsalH = bodyLen * 0.15;
+  const perpAngle = Math.atan2(dorsalMid.y - spine[1].y, dorsalMid.x - spine[1].x) - Math.PI / 2;
   ctx.beginPath();
-  ctx.ellipse(len * 0.1, -len * 0.05, len * 0.15, len * 0.1, 0.3, 0, Math.PI * 2);
+  ctx.moveTo(dorsalStart.x, dorsalStart.y);
+  ctx.quadraticCurveTo(
+    dorsalMid.x + Math.cos(perpAngle) * dorsalH,
+    dorsalMid.y + Math.sin(perpAngle) * dorsalH,
+    dorsalEnd.x, dorsalEnd.y
+  );
+  ctx.strokeStyle = 'rgba(180,100,20,0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // ---- 頭・目 ----
+  const headPt = spine[0];
+  const headAngle = Math.atan2(spine[1].y - headPt.y, spine[1].x - headPt.x);
+  const headW = bodyWidth(0, maxW);
+
+  // 吻（くちびる）
+  ctx.beginPath();
+  ctx.ellipse(headPt.x, headPt.y, headW * 0.55, headW * 0.45, headAngle, 0, Math.PI * 2);
+  ctx.fillStyle = '#d89828';
   ctx.fill();
+
+  // ひげ
+  [0.3, -0.3].forEach(d => {
+    ctx.beginPath();
+    ctx.moveTo(headPt.x, headPt.y);
+    ctx.quadraticCurveTo(
+      headPt.x + Math.cos(headAngle + d) * headW * 1.2,
+      headPt.y + Math.sin(headAngle + d) * headW * 1.2,
+      headPt.x + Math.cos(headAngle + d * 1.5) * headW * 2.0,
+      headPt.y + Math.sin(headAngle + d * 1.5) * headW * 2.0
+    );
+    ctx.strokeStyle = 'rgba(180,130,40,0.7)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
 
   // 目
-  ctx.fillStyle = '#1a0a00';
-  ctx.beginPath();
-  ctx.arc(len * 0.42, -len * 0.06, 3, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = 'rgba(255,220,100,0.8)';
-  ctx.beginPath();
-  ctx.arc(len * 0.42, -len * 0.06, 1.5, 0, Math.PI * 2);
-  ctx.fill();
+  const eyeOffset = headW * 0.3;
+  const eyePerpAngle = headAngle - Math.PI / 2;
+  [1, -1].forEach(side => {
+    const ex = headPt.x + Math.cos(headAngle) * headW * 0.25
+               + Math.cos(eyePerpAngle) * eyeOffset * side;
+    const ey = headPt.y + Math.sin(headAngle) * headW * 0.25
+               + Math.sin(eyePerpAngle) * eyeOffset * side;
+    // 白目
+    ctx.beginPath();
+    ctx.arc(ex, ey, headW * 0.18, 0, Math.PI * 2);
+    ctx.fillStyle = '#f0e8d0';
+    ctx.fill();
+    // 瞳
+    ctx.beginPath();
+    ctx.arc(ex, ey, headW * 0.1, 0, Math.PI * 2);
+    ctx.fillStyle = '#1a0a00';
+    ctx.fill();
+    // ハイライト
+    ctx.beginPath();
+    ctx.arc(ex + headW * 0.05, ey - headW * 0.05, headW * 0.04, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fill();
+  });
 
-  // 背びれ
-  ctx.fillStyle = 'rgba(200,130,20,0.7)';
+  // ---- ハイライト（背中の光沢）----
+  ctx.save();
+  ctx.globalAlpha = alpha * 0.3;
+  const hlGrad = ctx.createLinearGradient(
+    leftPts[1].x, leftPts[1].y,
+    rightPts[1].x, rightPts[1].y
+  );
+  hlGrad.addColorStop(0, 'rgba(255,240,180,0)');
+  hlGrad.addColorStop(0.35, 'rgba(255,248,210,0.7)');
+  hlGrad.addColorStop(0.65, 'rgba(255,248,210,0.7)');
+  hlGrad.addColorStop(1, 'rgba(255,240,180,0)');
+  ctx.strokeStyle = hlGrad;
+  ctx.lineWidth = maxW * 0.25;
+  ctx.lineCap = 'round';
   ctx.beginPath();
-  ctx.moveTo(len * 0.1, -len * 0.2);
-  ctx.quadraticCurveTo(len * 0.0, -len * 0.42, -len * 0.2, -len * 0.22);
-  ctx.quadraticCurveTo(-len * 0.05, -len * 0.22, len * 0.1, -len * 0.2);
-  ctx.fill();
+  ctx.moveTo(spine[0].x, spine[0].y);
+  for (let i = 1; i <= 3; i++) {
+    const cp = {
+      x: (spine[i - 1].x + spine[i].x) / 2,
+      y: (spine[i - 1].y + spine[i].y) / 2,
+    };
+    ctx.quadraticCurveTo(spine[i - 1].x, spine[i - 1].y, cp.x, cp.y);
+  }
+  ctx.stroke();
+  ctx.restore();
 
   ctx.restore();
 }
 
-function drawWater(alpha) {
-  const g = ctx.createLinearGradient(0, H * 0.3, 0, H);
-  g.addColorStop(0, `rgba(8,20,35,${alpha})`);
-  g.addColorStop(1, `rgba(4,12,22,${alpha})`);
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, W, H);
+// =====================
+// 水面・波紋
+// =====================
+const ripples = [];
+function addRipple(x, y) {
+  ripples.push({ x, y, r: 0, alpha: 0.25, speed: 1.4 + Math.random() * 0.8 });
 }
 
-// 鯉のパス
-function koiPos(time) {
-  const speed = 0.012;
-  const angle = time * speed;
-  const rx = W * 0.28, ry = H * 0.22;
-  return {
-    x: W/2 + Math.cos(angle) * rx,
-    y: H/2 + Math.sin(angle * 0.7) * ry,
-    dir: Math.atan2(
-      -Math.sin(angle * 0.7) * ry * 0.7,
-      -Math.sin(angle) * rx
-    ) + Math.PI
-  };
+function drawWater(fadeIn) {
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, `rgba(8,22,38,${fadeIn})`);
+  g.addColorStop(1, `rgba(4,12,22,${fadeIn})`);
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+
+  // 水中の光の揺らぎ
+  ctx.save();
+  ctx.globalAlpha = 0.04 * fadeIn;
+  for (let i = 0; i < 4; i++) {
+    const wx = W * 0.15 + W * 0.7 * (i / 3);
+    const wy = H * 0.3 + Math.sin(t * 0.018 + i * 1.3) * H * 0.15;
+    const wg = ctx.createRadialGradient(wx, wy, 0, wx, wy, W * 0.25);
+    wg.addColorStop(0, 'rgba(100,160,220,0.5)');
+    wg.addColorStop(1, 'rgba(100,160,220,0)');
+    ctx.fillStyle = wg;
+    ctx.fillRect(0, 0, W, H);
+  }
+  ctx.restore();
 }
+
+// =====================
+// 複数の鯉
+// =====================
+const kois = [
+  {
+    // メイン（大きめ、ゆったり周回）
+    pathFn: (t) => {
+      const a = t * 0.010;
+      const rx = W * 0.30, ry = H * 0.22;
+      return {
+        x: W / 2 + Math.cos(a) * rx,
+        y: H / 2 + Math.sin(a * 0.8) * ry,
+        angle: Math.atan2(
+          Math.cos(a * 0.8) * ry * 0.8 * 0.010,
+          -Math.sin(a) * rx * 0.010
+        ) + Math.PI,
+      };
+    },
+    bodyLen: Math.min(W, H) * 0.22,
+    phaseOffset: 0,
+    delay: 0,
+  },
+  {
+    // サブ（小さめ、逆回り）
+    pathFn: (t) => {
+      const a = -t * 0.013 + Math.PI;
+      const rx = W * 0.20, ry = H * 0.14;
+      return {
+        x: W * 0.52 + Math.cos(a) * rx,
+        y: H * 0.45 + Math.sin(a * 0.9) * ry,
+        angle: Math.atan2(
+          Math.cos(a * 0.9) * ry * 0.9 * -0.013,
+          Math.sin(a) * rx * 0.013
+        ) + Math.PI,
+      };
+    },
+    bodyLen: Math.min(W, H) * 0.14,
+    phaseOffset: Math.PI,
+    delay: 40,
+  },
+  {
+    // 3匹目（小、斜め移動）
+    pathFn: (t) => {
+      const a = t * 0.008 + 2.0;
+      const rx = W * 0.24, ry = H * 0.18;
+      return {
+        x: W * 0.48 + Math.cos(a * 1.1) * rx,
+        y: H * 0.55 + Math.sin(a) * ry,
+        angle: Math.atan2(
+          Math.cos(a) * ry * 0.008,
+          -Math.sin(a * 1.1) * rx * 0.008 * 1.1
+        ) + Math.PI,
+      };
+    },
+    bodyLen: Math.min(W, H) * 0.11,
+    phaseOffset: Math.PI * 0.7,
+    delay: 70,
+  },
+];
 
 function loop() {
   ctx.clearRect(0, 0, W, H);
   t++;
 
-  const fadeIn = Math.min(1, t / 60);
+  const fadeIn = Math.min(1, t / 50);
   drawWater(fadeIn);
 
-  // 水面の輝き
-  ctx.save();
-  ctx.globalAlpha = 0.06 * fadeIn;
-  for (let i = 0; i < 5; i++) {
-    const wx = W * 0.1 + W * 0.8 * (i / 4);
-    const wy = H * 0.4 + Math.sin(t * 0.02 + i) * H * 0.1;
-    const wg = ctx.createRadialGradient(wx, wy, 0, wx, wy, W * 0.2);
-    wg.addColorStop(0, 'rgba(150,200,255,0.4)');
-    wg.addColorStop(1, 'rgba(150,200,255,0)');
-    ctx.fillStyle = wg;
-    ctx.fillRect(0, 0, W, H);
-  }
-  ctx.restore();
-
   // 波紋の更新
-  if (t % 40 === 0) {
-    const p = koiPos(t);
+  if (t % 35 === 0) {
+    const p = kois[0].pathFn(t);
     addRipple(p.x, p.y);
   }
   ripples.forEach((r, i) => {
-    r.r += 1.5;
-    r.alpha -= 0.005;
-    if (r.alpha > 0) {
-      ctx.save();
-      ctx.strokeStyle = `rgba(180,160,100,${r.alpha * fadeIn})`;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.ellipse(r.x, r.y, r.r, r.r * 0.4, 0, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    }
+    r.r += r.speed;
+    r.alpha -= 0.004;
+    if (r.alpha <= 0 || r.r > Math.min(W, H) * 0.45) { ripples.splice(i, 1); return; }
+    ctx.save();
+    ctx.strokeStyle = `rgba(160,200,255,${r.alpha * fadeIn})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(r.x, r.y, r.r, r.r * 0.38, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
   });
 
-  const p = koiPos(t);
-  const waveOffset = Math.sin(t * 0.08) * 0.15;
-  drawKoi(p.x, p.y, p.dir + waveOffset, Math.min(1, t / 60), fadeIn);
+  // 鯉を描画
+  kois.forEach(k => {
+    if (t < k.delay) return;
+    const age = t - k.delay;
+    const koiAlpha = Math.min(1, age / 40) * fadeIn;
+    const pos = k.pathFn(t);
+    const wave = t * 0.12 + k.phaseOffset;
+    drawKoi(pos.x, pos.y, k.bodyLen, pos.angle, wave, koiAlpha);
+  });
 
-  if (t < 400) requestAnimationFrame(loop);
+  if (t < 500) requestAnimationFrame(loop);
 }
 loop();
 </script>
